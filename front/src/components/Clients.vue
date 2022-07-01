@@ -1,36 +1,37 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { useStore } from 'vuex'
 
-defineProps({
-  msg: {
-    type: String,
-    required: true
-  }
+const store = useStore()
+const clients = ref([])
+
+const filteredClients = computed(() => {
+  return store.getters.searchString === ''
+    ? clients.value
+    : clients.value.filter((item) => item.name.includes(store.getters.searchString))
 })
 
-const clients = ref([
-  {id: 0, name: 'client 0', numberOfCertificates: 1, active: false},
-  {id: 1, name: 'client 1', numberOfCertificates: 0, active: true},
-  {id: 2, name: 'client 2', numberOfCertificates: 2, active: false},
-  {id: 3, name: 'eclient 3', numberOfCertificates: 1, active: false},
-  {id: 4, name: 'client 4', numberOfCertificates: 3, active: false},
-  {id: 11, name: 'client 11', numberOfCertificates: 1, active: false},
-  {id: 12, name: 'j.dou', numberOfCertificates: 1, active: false}
-])
-
-const q = 'cli  '.trim()
-const filteredClients = computed(() => {
-  return q === ''
-    ? clients.value
-    : clients.value.filter((item) => item.name.includes(q))
+watch(() => store.getters.getClientID, (newID, oldID) => {
+  clients.value.forEach((c) => {
+    if (c.id === newID) {
+      c.active = true
+    } else {
+      c.active = false
+    }
+  })
 })
 
 const showClient = (client)=> {
-  clients.value.forEach((c) => {
-    c.active = false
-  })
-  client.active = true
-} 
+  store.commit('updateClientID', client.id)
+}
+
+onMounted(() => {
+  store
+    .dispatch('getClients')
+    .then(data => {
+      clients.value = data
+    })
+})
 </script>
 
 <template>
