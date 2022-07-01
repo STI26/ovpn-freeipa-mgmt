@@ -2,6 +2,7 @@
 import { RouterView } from 'vue-router'
 import { ref, watch } from 'vue'
 import { useStore } from 'vuex'
+import Toast from '@/components/Toast.vue';
 
 const store = useStore()
 const query = ref('')
@@ -51,8 +52,11 @@ watch(() => query.value, (newQ, oldQ) => {
     </nav>
   </header>
 
-  <main class="container">
-    <RouterView />
+  <main aria-live="polite" aria-atomic="true" class="position-relative">
+    <div class="container">
+      <RouterView />
+    </div>
+    <Toast />
   </main>
 </template>
 
