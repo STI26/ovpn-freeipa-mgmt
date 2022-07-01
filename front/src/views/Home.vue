@@ -7,10 +7,10 @@ import Clients from '@/components/Clients.vue';
   <div class="pt-2">
     <div class="row">
       <div class="col scrolled">
-        <Clients msg="The clients" />
+        <Clients />
       </div>
       <div class="col">
-        <Client msg="The client" />
+        <Client />
       </div>
     </div>
   </div>
