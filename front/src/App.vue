@@ -1,8 +1,14 @@
 <script setup>
 import { RouterView } from 'vue-router'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useStore } from 'vuex'
 
+const store = useStore()
 const query = ref('')
+
+watch(() => query.value, (newQ, oldQ) => {
+  store.commit('updateSearchString', newQ)
+});
 </script>
 
 <template>
@@ -14,7 +20,7 @@ const query = ref('')
           <input
             class="form-control me-2"
             type="search"
-            v-modal.trim="query"
+            v-model.trim="query"
             placeholder="Search"
             aria-label="Search"
           />
