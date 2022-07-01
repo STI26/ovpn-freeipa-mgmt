@@ -33,7 +33,9 @@ export default createStore({
     showToast (context) {
       const toastEl = document.getElementById('liveToast')
       const toast = new Toast(toastEl)
-      toast.show()
+      setTimeout(() => {
+        toast.show()
+      }, 0)
     }
   },
   modules: {
