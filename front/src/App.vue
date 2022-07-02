@@ -18,7 +18,11 @@ watch(() => query.value, (newQ, oldQ) => {
     <nav class="navbar fixed-top navbar-light bg-light">
       <div class="container-fluid">
 
-        <div class="d-flex ps-5 search-form">
+        <div class="d-flex">
+          <router-link class="btn btn-outline-dark" to="/">/</router-link>
+        </div>
+
+        <div class="d-flex ps-3 search-form">
           <input
             class="form-control me-2"
             type="search"
@@ -29,9 +33,7 @@ watch(() => query.value, (newQ, oldQ) => {
         </div>
 
         <div class="d-flex flex-fill">
-          <button class="btn btn-outline-success" type="button">
-            Create new
-          </button>
+          <router-link class="btn btn-outline-success" to="/create">Create new</router-link>
         </div>
 
         <div class="dropdown">
