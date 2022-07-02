@@ -35,7 +35,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="list-group">
+  <div v-if="filteredClients.length === 0">
+    <h5>clients not found</h5>
+  </div>
+  <div v-else class="list-group">
     <button
       type="button"
       v-for="client in filteredClients" :key="client.id"
