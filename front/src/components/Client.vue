@@ -119,7 +119,7 @@ watch(() => client.selectedCertificate, (newCertID, oldCertID) => {
 
 <template>
   <div v-if="client.id === null">
-    <h3>nothing selected</h3>
+    <h5>nothing selected</h5>
   </div>
   <form v-else @submit.prevent="saveClient">
     <div class="row">
@@ -235,27 +235,3 @@ watch(() => client.selectedCertificate, (newCertID, oldCertID) => {
     </div>
   </form>
 </template>
-
-<style scoped>
-h1 {
-  font-weight: 500;
-  font-size: 2.6rem;
-  top: -10px;
-}
-
-h3 {
-  font-size: 1.2rem;
-}
-
-.greetings h1,
-.greetings h3 {
-  text-align: center;
-}
-
-@media (min-width: 1024px) {
-  .greetings h1,
-  .greetings h3 {
-    text-align: left;
-  }
-}
-</style>
