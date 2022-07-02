@@ -31,7 +31,17 @@ const downloadConfig = () => {
     store.dispatch('showToast')
     return
   }
-  // todo ...
+
+  store
+    .dispatch('downloadConfig', {
+      clientID: client.id,
+      subject: client.subject,
+      certificateID: client.selectedCertificate
+    })
+    .catch(e => {
+      store.commit('updateToast', {color: 'danger', text: e})
+      store.dispatch('showToast')
+    })
 }
 
 const saveClient = () => {
