@@ -3,6 +3,7 @@ import { RouterView } from 'vue-router'
 import { ref, watch } from 'vue'
 import { useStore } from 'vuex'
 import Toast from '@/components/Toast.vue';
+import Modal from '@/components/Modal.vue';
 
 const store = useStore()
 const query = ref('')
@@ -56,6 +57,7 @@ watch(() => query.value, (newQ, oldQ) => {
     <div class="container">
       <RouterView />
     </div>
+    <Modal />
     <Toast />
   </main>
 </template>
