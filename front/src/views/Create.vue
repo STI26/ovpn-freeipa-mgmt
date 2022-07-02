@@ -1,0 +1,112 @@
+<script setup>
+import { onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex'
+
+const store = useStore()
+const router = useRouter()
+
+const options = ref(null)
+const typeTarget = ref(null)
+const selectedTarget = ref(null)
+
+const loadOptions = (action) => {
+  store
+    .dispatch(action)
+    .then(data => {
+      options.value = data
+
+      if (data.length > 0) {
+        selectedTarget.value = data[0].id
+      }
+    })
+    .catch(e => {
+      store.commit('updateToast', {color: 'danger', text: e})
+      store.dispatch('showToast')
+    })
+}
+
+const onSubmit = () => {
+  store
+    .dispatch('createClient')
+    .then(() => {
+      store.commit('updateToast', {color: 'success', text: 'Successful Create'})
+      store.dispatch('showToast')
+      router.push('/')
+    })
+    .catch(e => {
+      store.commit('updateToast', {color: 'danger', text: e})
+      store.dispatch('showToast')
+    })
+}
+
+watch(() => typeTarget.value, (newTarget, oldTarget) => {
+  loadOptions(newTarget)
+})
+
+onMounted(() => {
+  typeTarget.value = 'getUsers'
+  loadOptions(typeTarget.value)
+})
+</script>
+
+<template>
+<div class="card mt-3">
+  <div class="card-header">
+    Select name
+  </div>
+  <div class="card-body">
+    <div class="row px-5">
+      <div class="col-9">
+        <select v-model="selectedTarget" class="form-select form-select mb-3" aria-label=".form-select">
+          <option v-for="opt in options" :key="opt.id" :value="opt.id">{{ opt.name }}</option>
+        </select>
+      </div>
+
+      <div class="col-3">
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            v-model="typeTarget"
+            type="radio"
+            value="getUsers"
+            name="flexRadioDefault"
+            id="flexRadioDefault1"
+            checked
+          />
+          <label class="form-check-label" for="flexRadioDefault1">
+            User
+          </label>
+        </div>
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            v-model="typeTarget"
+            type="radio"
+            value="getHosts"
+            name="flexRadioDefault"
+            id="flexRadioDefault2"
+          />
+          <label class="form-check-label" for="flexRadioDefault2">
+            Host
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <router-link
+      class="btn btn-secondary float-start"
+      to="/"
+    >Cancel</router-link>
+    <button
+      type="button"
+      class="btn btn-primary float-end"
+      @click="onSubmit"
+    >Create</button>
+  </div>
+</div>
+</template>
+
+<style scoped>
+
+</style>
