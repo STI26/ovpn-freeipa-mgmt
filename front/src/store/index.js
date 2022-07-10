@@ -1,11 +1,11 @@
 import { createStore } from 'vuex'
-// import auth from '@/store/auth'
+import auth from '@/store/auth'
 import client from '@/store/client'
 import { Toast, Modal } from 'bootstrap'
 
 export default createStore({
   state: {
-    backendURL: 'process.env.VUE_APP_BASEURL',
+    backendURL: import.meta.env.VITE_API_URL,
     searchString: '',
     toast: {obj: null, text: '', color: ''},
     modal: {
@@ -72,7 +72,7 @@ export default createStore({
     }
   },
   modules: {
-    // auth,
+    auth,
     client
   }
 })

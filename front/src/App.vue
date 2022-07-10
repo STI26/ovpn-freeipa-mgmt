@@ -1,20 +1,36 @@
 <script setup>
-import { RouterView } from 'vue-router'
-import { ref, watch } from 'vue'
+import { RouterView, useRouter } from 'vue-router'
+import { ref, watch, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import Toast from '@/components/Toast.vue';
 import Modal from '@/components/Modal.vue';
 
 const store = useStore()
 const query = ref('')
+const router = useRouter()
+
+const mainbg = computed(() => {
+  return router.currentRoute.value.name === 'login'
+    ? "bg-light"
+    : ""
+})
+
+const logout = () => {
+  store.commit('clearAuth')
+  router.push('/login')
+}
 
 watch(() => query.value, (newQ, oldQ) => {
   store.commit('updateSearchString', newQ)
-});
+})
+
+onMounted(() => {
+  store.dispatch('autoLogin')
+})
 </script>
 
 <template>
-  <header>
+  <header v-if="!mainbg">
     <nav class="navbar fixed-top navbar-light bg-light">
       <div class="container-fluid">
 
@@ -44,10 +60,10 @@ watch(() => query.value, (newQ, oldQ) => {
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            Admin
+            {{ store.getters.username }}
           </button>
-          <ul class="dropdown-menu" aria-labelledby="userMenu">
-            <li><a class="dropdown-item" href="#">Logout</a></li>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+            <li><button class="dropdown-item" @click="logout" type="button">Logout</button></li>
           </ul>
         </div>
 
@@ -55,7 +71,7 @@ watch(() => query.value, (newQ, oldQ) => {
     </nav>
   </header>
 
-  <main aria-live="polite" aria-atomic="true" class="position-relative">
+  <main aria-live="polite" aria-atomic="true" class="position-relative" :class="mainbg">
     <div class="container">
       <RouterView />
     </div>
