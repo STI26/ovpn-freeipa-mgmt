@@ -1,18 +1,39 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { computed, watch, onMounted, reactive } from 'vue'
 import { useStore } from 'vuex'
 
 const store = useStore()
-const clients = ref([])
+const clients = reactive({
+  users: [],
+  hosts: []
+})
+const spinner = reactive({
+  users: true,
+  hosts: true
+})
 
-const filteredClients = computed(() => {
+const filteredUsers = computed(() => {
   return store.getters.searchString === ''
-    ? clients.value
-    : clients.value.filter((item) => item.name.includes(store.getters.searchString))
+    ? clients.users
+    : clients.users.filter((item) => item.name.includes(store.getters.searchString))
+})
+
+const filteredHosts = computed(() => {
+  return store.getters.searchString === ''
+    ? clients.hosts
+    : clients.hosts.filter((item) => item.name.includes(store.getters.searchString))
 })
 
 watch(() => store.getters.getClientID, (newID, oldID) => {
-  clients.value.forEach((c) => {
+  clients.users.forEach((c) => {
+    if (c.id === newID) {
+      c.active = true
+    } else {
+      c.active = false
+    }
+  })
+
+  clients.hosts.forEach((c) => {
     if (c.id === newID) {
       c.active = true
     } else {
@@ -22,32 +43,92 @@ watch(() => store.getters.getClientID, (newID, oldID) => {
 })
 
 const showClient = (client)=> {
-  store.commit('updateClientID', client.id)
+  store.commit('updateClientID', client.name)
 }
 
 onMounted(() => {
   store
-    .dispatch('getClients')
-    .then(data => {
-      clients.value = data
+    .dispatch('getUsers')
+    .then(res => {
+      if (!res.users) {
+        throw 'can\'t get users object'
+      } else {
+        spinner.users = false
+        clients.users = res.users.filter((item) => item.numberOfCertificates > 0)
+      }
+    })
+    .catch(e => {
+      store.commit('updateToast', {color: 'danger', text: e})
+      store.dispatch('showToast')
+    })
+
+  store
+    .dispatch('getHosts')
+    .then(res => {
+      if (!res.hosts) {
+        throw 'can\'t get hosts object'
+      } else {
+        spinner.hosts = false
+        clients.hosts = res.hosts.filter((item) => item.numberOfCertificates > 0)
+      }
+    })
+    .catch(e => {
+      store.commit('updateToast', {color: 'danger', text: e})
+      store.dispatch('showToast')
     })
 })
 </script>
 
 <template>
-  <div v-if="filteredClients.length === 0">
-    <h5>clients not found</h5>
+
+  <div class="card text-center">
+    <h5 class="card-header text-muted">Users</h5>
+  </div>
+
+  <div v-if="spinner.users" class="d-flex justify-content-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  <div v-else-if="filteredUsers.length === 0">
+    <h5>users not found</h5>
   </div>
   <div v-else class="list-group">
     <button
       type="button"
-      v-for="client in filteredClients" :key="client.id"
+      v-for="user in filteredUsers" :key="user.id"
       class="list-group-item d-flex justify-content-between align-items-center list-group-item-action"
-      :class="{ active: client.active }"
-      @click="showClient(client)"
+      :class="{ active: user.active }"
+      @click="showClient(user)"
     >
-      {{ client.name }}
-      <span class="badge bg-secondary rounded-pill">{{ client.numberOfCertificates }}</span>
+      {{ user.name }}
+      <span class="badge bg-secondary rounded-pill">{{ user.numberOfCertificates }}</span>
     </button>
   </div>
+
+  <div class="card text-center">
+    <h5 class="card-header text-muted">Hosts</h5>
+  </div>
+
+  <div v-if="spinner.hosts" class="d-flex justify-content-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  <div v-else-if="filteredHosts.length === 0">
+    <h5>hosts not found</h5>
+  </div>
+  <div v-else class="list-group">
+    <button
+      type="button"
+      v-for="host in filteredHosts" :key="host.id"
+      class="list-group-item d-flex justify-content-between align-items-center list-group-item-action"
+      :class="{ active: host.active }"
+      @click="showClient(host)"
+    >
+      {{ host.name }}
+      <span class="badge bg-secondary rounded-pill">{{ host.numberOfCertificates }}</span>
+    </button>
+  </div>
+
 </template>
