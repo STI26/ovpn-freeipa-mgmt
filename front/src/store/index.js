@@ -3,6 +3,7 @@ import auth from '@/store/auth'
 import client from '@/store/client'
 import { Toast, Modal } from 'bootstrap'
 
+
 export default createStore({
   state: {
     backendURL: import.meta.env.VITE_API_URL,
@@ -52,21 +53,48 @@ export default createStore({
     }
   },
   actions: {
-    showToast (context) {
+    async fetch ({ getters, commit }, data) {
+      const body = {
+        method: data.method,
+        headers: {
+          'Authorization': getters.token,
+          'Content-Type': 'application/json'
+        }
+      }
+
+      if (data.body) {
+        body.body = JSON.stringify(data.body)
+      }
+
+      const url = getters.backendURL+data.path
+      const response = await fetch(url, body)
+      
+      if (response.status === 401) {
+        commit('clearAuth')
+        return
+      }
+      
+      if (!response.ok) {
+        throw `${url}: ${response.status} (${response.statusText})`
+      }
+      
+      return response.json()
+    },
+    showToast ({ getters }) {
       setTimeout(() => {
-        const toast = context.getters.toast.obj
+        const toast = getters.toast.obj
         toast.show()
       }, 0)
     },
-    showModal (context) {
+    showModal ({ getters }) {
       setTimeout(() => {
-        const modal = context.getters.modal.obj
+        const modal = getters.modal.obj
         modal.show()
       }, 0)
     },
-    hideModal (context) {
+    hideModal ({ getters }) {
       setTimeout(() => {
-        const modal = context.getters.modal.obj
+        const modal = getters.modal.obj
         modal.hide()
       }, 0)
     }
