@@ -14,10 +14,15 @@ const loadOptions = (action) => {
   store
     .dispatch(action)
     .then(data => {
-      options.value = data
+      if (data.error !== '') {
+        throw data.error
+      }
 
-      if (data.length > 0) {
-        selectedTarget.value = data[0].id
+      const target = action === 'getUsers' ? 'users' : 'hosts'
+      options.value = data[target]
+
+      if (data[target].length > 0) {
+        selectedTarget.value = data[target][0].id
       }
     })
     .catch(e => {
