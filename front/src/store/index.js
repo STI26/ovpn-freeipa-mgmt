@@ -74,7 +74,13 @@ export default createStore({
       }
       
       if (!response.ok) {
-        throw `${url}: ${response.status} (${response.statusText})`
+        const r = await response.json()
+
+        if (r.error) {
+          throw r.error
+        } else {
+          throw `${url}: ${response.status} (${response.statusText})`
+        }
       }
       
       return response.json()
@@ -100,7 +106,13 @@ export default createStore({
       }
       
       if (!response.ok) {
-        throw `${url}: ${response.status} (${response.statusText})`
+        const r = await response.json()
+
+        if (r.error) {
+          throw r.error
+        } else {
+          throw `${url}: ${response.status} (${response.statusText})`
+        }
       }
       
       return response.blob()
