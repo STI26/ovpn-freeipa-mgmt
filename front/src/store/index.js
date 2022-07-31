@@ -71,7 +71,6 @@ export default createStore({
       
       if (response.status === 401) {
         commit('clearAuth')
-        return
       }
       
       if (!response.ok) {
@@ -79,6 +78,32 @@ export default createStore({
       }
       
       return response.json()
+    },
+    async download ({ getters, commit }, data) {
+      const body = {
+        method: data.method,
+        headers: {
+          'Authorization': getters.token,
+          'Content-Type': 'text/plain'
+        }
+      }
+
+      if (data.body) {
+        body.body = JSON.stringify(data.body)
+      }
+
+      const url = getters.backendURL+data.path
+      const response = await fetch(url, body)
+      
+      if (response.status === 401) {
+        commit('clearAuth')
+      }
+      
+      if (!response.ok) {
+        throw `${url}: ${response.status} (${response.statusText})`
+      }
+      
+      return response.blob()
     },
     showToast ({ getters }) {
       setTimeout(() => {
