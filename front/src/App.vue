@@ -24,6 +24,10 @@ watch(() => query.value, (newQ, oldQ) => {
   store.commit('updateSearchString', newQ)
 })
 
+watch(() => store.getters.token, (newT, oldT) => {
+  if (newT === null) logout()
+})
+
 onMounted(() => {
   store.dispatch('autoLogin')
 })
