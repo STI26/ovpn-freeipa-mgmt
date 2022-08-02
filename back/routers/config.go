@@ -53,8 +53,7 @@ func (r *Routers) AppGetConfig(c *gin.Context) {
 	path := filepath.Join(r.Ovpn.Config.Ccd, userID)
 	routes, err := os.ReadFile(path)
 	if err != nil {
-		log.Println("[readKey] [Warn] ", err)
-		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		log.Println("[ReadFile] [Warn] ", err)
 		return
 	}
 
@@ -66,7 +65,6 @@ func (r *Routers) AppGetConfig(c *gin.Context) {
 	ip, err := ipp.GetIP(userID)
 	if err != nil {
 		log.Println("[ReadFile] [Warn] ", err)
-		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
 
