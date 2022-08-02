@@ -293,12 +293,7 @@ func (r *Routers) AppUpdateConfig(c *gin.Context) {
 		Path:    r.Ovpn.Config.Ipp,
 		Network: r.Ovpn.Server,
 	}
-	ip, err := ipp.GetIP(userID)
-	if err != nil {
-		log.Println("[ReadFile] [Warn] ", err)
-		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
-		return
-	}
+	ip, _ := ipp.GetIP(userID)
 	if ip != data.IP {
 		err := ipp.UpdateIP(userID, data.IP)
 		if err != nil {
