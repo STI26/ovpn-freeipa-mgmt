@@ -1,0 +1,55 @@
+#Client config
+client
+resolv-retry infinite
+remote {{ .serverConfig.Local }}
+
+#Connect config
+port {{ .serverConfig.Port }}
+proto {{ .serverConfig.Proto }}
+dev {{ .serverConfig.Dev }}
+nobind
+remote-cert-tls server
+persist-key
+persist-tun
+comp-lzo {{ .serverConfig.CompLzo }}
+tun-mtu {{ .serverConfig.TunMtu }}
+
+tls-client
+
+#Client config
+keepalive 60 120
+
+#Encryption config
+{{ if .serverConfig.DataCiphers }}
+data-ciphers {{ .serverConfig.DataCiphers }}
+{{ end }}
+{{ if .serverConfig.Auth }}
+auth {{ .serverConfig.Auth }}
+{{ end }}
+
+#Log config
+status /var/log/openvpn/openvpn-status.log
+log-append /var/log/openvpn/openvpn-append.log
+verb 3
+
+{{ if .cert }}
+<cert>
+{{ .cert }}
+</cert>
+{{ end }}
+{{ if .key }}
+<key>
+{{ .key }}
+</key>
+{{ end }}
+{{ if .ca }}
+<ca>
+{{ .ca }}
+</ca>
+{{ end }}
+{{ if .tlsAuth }}
+key-direction 1
+<tls-auth>
+{{ .tlsAuth }}
+</tls-auth>
+{{ end }}

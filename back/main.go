@@ -1,58 +1,46 @@
 package main
 
 import (
-	"embed"
-	"html/template"
 	"log"
-	"net/http"
+	"net"
 	"strings"
 
 	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/csrf"
-	adapter "github.com/gwatts/gin-adapter"
+	"github.com/sti26/ovpn_freeipa_mgmt/libs"
+	"github.com/sti26/ovpn_freeipa_mgmt/routers"
 )
 
-// content holds our static web server content.
-//go:embed public/templates/* public/assets/login.min.css
-var content embed.FS
+var config = libs.GlobalConfig{}
 
-var config = GlobalConfig{}
-var ipaSession = IPASession{}
+var ipaClient libs.FreeIPA
+var ovpn libs.OpenVPN
 
-func setupRouter() *gin.Engine {
-
-	store := cookie.NewStore([]byte(*config.CookieSecret))
-	store.Options(sessions.Options{MaxAge: *config.SessionsMaxAge * 60 * 60})
+func setupRouter(rts *routers.Routers) *gin.Engine {
 
 	r := gin.Default()
-	r.Use(cors.Default())
-	r.Use(sessions.Sessions("ldapsession", store))
-
-	addr := strings.Split(*config.ListenAddress, ":")
-	r.SetTrustedProxies([]string{addr[0]})
-
-	templ := template.Must(template.New("").ParseFS(content, "public/templates/*.html"))
-	r.SetHTMLTemplate(templ)
-	r.StaticFS("/static", http.FS(content))
-
-	if *config.CSRF {
-		csrfMiddleware := csrf.Protect([]byte(*config.CSRFSecret), csrf.Path("/"))
-		r.Use(adapter.Wrap(csrfMiddleware))
-	}
+	cfg := cors.DefaultConfig()
+	cfg.AllowAllOrigins = true
+	cfg.AddAllowHeaders("*")
+	// config.AllowHeaders = []string{"Content-Type", "Authorization"}
+	r.Use(cors.New(cfg))
 
 	gRoot := r.Group("/")
 	{
-		// Routes without auth
-		gRoot.GET("/login", AppLoginPage)
-		gRoot.POST("/login", AppLogin)
-		gRoot.GET("/logout", AppLogout)
+		gRoot.POST("/login", rts.AppLogin)
+		gRoot.POST("/logout", rts.AppLogout)
 
-		// Routes with auth
-		gRoot.GET("/", RPCAuthMiddleware(true), AppIndexPage)
-		gRoot.GET("/auth", RPCAuthMiddleware(false), AppIndexPage)
+		gRoot.GET("/users/:uid/config/:cid", rts.AppDownloadConfig)
+		gRoot.POST("/users/:uid/config", rts.AppCreateConfig)
+		gRoot.PUT("/users/:uid/config/:cid", rts.AppUpdateConfig)
+		gRoot.DELETE("/users/:uid/config/:cid", rts.AppDeleteConfig)
+
+		gRoot.GET("/users", rts.AppGetUsers)
+		gRoot.GET("/hosts", rts.AppGetHosts)
+		gRoot.GET("/certs", rts.AppGetCerts)
+		gRoot.DELETE("/certs/:cid", rts.AppRevokeCert)
+		gRoot.GET("/status", rts.AppGetStatus)
+		gRoot.GET("/config", rts.AppGetConfig)
 	}
 
 	return r
@@ -61,15 +49,30 @@ func setupRouter() *gin.Engine {
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 
-	config.init()
+	config.Init()
+	ipaClient = libs.FreeIPA{Domain: *config.IPADomain, Server: *config.IPAServer, Secret: config.Secret}
+	ipaServers, _ := ipaClient.GetIPAServers()
 
-	r := setupRouter()
+	ovpn = libs.OpenVPN{IPAHosts: ipaServers}
+	ovpn.Init(*config.OvpnConf)
+
+	mask := net.ParseIP(ovpn.Server.Mask)
+	sz, _ := net.IPMask(mask.To4()).Size()
+
+	rts := routers.Routers{Ipa: &ipaClient, Cfg: &config, Ovpn: &ovpn}
+
+	r := setupRouter(&rts)
 
 	log.Printf(
 		"~~~~~~ OpenVPN Managment ~~~~~~\n"+
-			"\tListenAddress:       %s\n"+
-			"\tLdapAllowGroup:      %s\n",
-		*config.ListenAddress, *config.LdapAllowGroup,
+			"\tListen address:        %s\n"+
+			"\tIPA Servers:           %s\n"+
+			"\tIPA Allow Group:       %s\n"+
+			"\tOpenVPN Network:       %s/%d\n",
+		*config.ListenAddress,
+		strings.Join(ipaServers, ", "),
+		*config.IPAAllowGroup,
+		ovpn.Server.IP, sz,
 	)
 
 	r.Run(*config.ListenAddress)

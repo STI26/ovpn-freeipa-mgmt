@@ -1,23 +1,14 @@
-package main
+package libs
 
 import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"fmt"
 	"log"
-	"time"
 )
 
-func gen() {
-	t := time.Now()
-	csr, key, err := newCSR("test")
-	fmt.Println("----", time.Now().Sub(t))
-	println(csr.Raw, key.Primes, err)
-}
-
-func newCSR(domain string) (*x509.CertificateRequest, *rsa.PrivateKey, error) {
+func NewCSR(subject string) (*x509.CertificateRequest, *rsa.PrivateKey, error) {
 	bits := 4096
 
 	log.Printf("Generating %d-bit RSA key", bits)
@@ -30,8 +21,7 @@ func newCSR(domain string) (*x509.CertificateRequest, *rsa.PrivateKey, error) {
 		SignatureAlgorithm: x509.SHA256WithRSA,
 		PublicKeyAlgorithm: x509.RSA,
 		PublicKey:          &certKey.PublicKey,
-		Subject:            pkix.Name{CommonName: domain},
-		DNSNames:           []string{domain},
+		Subject:            pkix.Name{CommonName: subject},
 	}
 
 	log.Println("Generating CSR")

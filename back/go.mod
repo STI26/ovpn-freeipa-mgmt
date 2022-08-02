@@ -1,13 +1,11 @@
-module github.com/siarheitrus/ovpn_web_mgmt
+module github.com/sti26/ovpn_freeipa_mgmt
 
 go 1.18
 
 require (
 	github.com/gin-contrib/cors v1.3.1
-	github.com/gin-contrib/sessions v0.0.5
 	github.com/gin-gonic/gin v1.7.7
-	github.com/gorilla/csrf v1.7.1
-	github.com/gwatts/gin-adapter v1.0.0
+	github.com/thanhpk/randstr v1.0.4
 	github.com/ybbus/jsonrpc/v3 v3.1.0
 )
 
@@ -17,15 +15,12 @@ require (
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/golang/protobuf v1.3.3 // indirect
-	github.com/gorilla/context v1.1.1 // indirect
-	github.com/gorilla/securecookie v1.1.1 // indirect
-	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
+	github.com/stretchr/testify v1.7.1 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29 // indirect
 	golang.org/x/sys v0.0.0-20220513210249-45d2b4557a2a // indirect
