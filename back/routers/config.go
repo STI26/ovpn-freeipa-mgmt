@@ -54,7 +54,6 @@ func (r *Routers) AppGetConfig(c *gin.Context) {
 	routes, err := os.ReadFile(path)
 	if err != nil {
 		log.Println("[ReadFile] [Warn] ", err)
-		return
 	}
 
 	// Get IP
@@ -65,12 +64,11 @@ func (r *Routers) AppGetConfig(c *gin.Context) {
 	ip, err := ipp.GetIP(userID)
 	if err != nil {
 		log.Println("[ReadFile] [Warn] ", err)
-		return
 	}
 
-	c.JSON(http.StatusOK, &gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"error": "",
-		"config": map[string]string{
+		"config": gin.H{
 			"routes": string(routes),
 			"ip":     ip,
 		},
