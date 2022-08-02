@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { useStore } from 'vuex'
 
 const store = useStore()
@@ -13,6 +13,8 @@ const client = reactive({
   certExpiresOn: '',
   selectedCertificate: null
 })
+
+const spinner = ref(false)
 
 const clearForm = () => {
   store.commit('updateClientID', null)
@@ -32,11 +34,24 @@ const downloadConfig = () => {
     return
   }
 
+  const cert = client.certificates.filter(c => c.id === client.selectedCertificate)
+  if (!cert[0].key_exists) {
+    store.commit('updateToast', {color: 'warning', text: 'Please select certificate with key.'})
+    store.dispatch('showToast')
+    return
+  }
+
   store
     .dispatch('downloadConfig', {
       clientID: client.id,
       subject: client.subject,
       certificateID: client.selectedCertificate
+    })
+    .then(blob => {
+      const a = document.createElement('a')
+      a.href = window.URL.createObjectURL(blob)
+      a.download = 'config.ovpn'
+      a.click()
     })
     .catch(e => {
       store.commit('updateToast', {color: 'danger', text: e})
@@ -47,7 +62,7 @@ const downloadConfig = () => {
 const saveClient = () => {
   const data = {
     title: 'Save',
-    text: 'These files will be modify:',
+    text: `These files will be modify: ipp.txt, ${ client.subject } into ccd`,
     action: 'saveClient',
     data: {
       clientID: client.id,
@@ -64,9 +79,13 @@ const saveClient = () => {
 const deleteClient = () => {
   const data = {
     title: 'Delete',
-    text: 'These files will be removed:',
+    text: `These files will be removed: ipp.txt, ${ client.subject } into ccd`,
     action: 'deleteClient',
-    data: {subject: client.subject}
+    data: {
+      clientID: client.id,
+      subject: client.subject,
+      certificateID: client.selectedCertificate
+    }
   }
   store.commit('updateModal', data)
   store.dispatch('showModal')
@@ -84,22 +103,43 @@ const revokeCert = () => {
 }
 
 watch(() => store.getters.getClientID, (newID, oldID) => {
+  if (newID === null) return
+  spinner.value = true
+
+  store
+    .dispatch('getCerts', newID)
+    .then(res => {
+      if (!res.certificates) {
+        throw 'can\'t get certs object'
+      } else {
+        client.id = newID
+        client.subject = newID
+        client.certificates = res.certificates
+  
+        if (res.certificates.length > 0) {
+          client.selectedCertificate = res.certificates[0].id
+        } else {
+          client.selectedCertificate = null
+        }
+      }
+
+      spinner.value = false
+    })
+    .catch(e => {
+      store.commit('updateToast', {color: 'danger', text: e})
+      store.dispatch('showToast')
+      clearForm()
+    })
+
   store
     .dispatch('getClient', newID)
     .then(data => {
-      client.id = data.id
-      client.subject = data.subject
-      client.ip = data.ip
-      client.routes = data.routes
-      client.certificates = data.certificates
-
-      if (data.certificates.length > 0) {
-        client.selectedCertificate = data.certificates[0].id
-      } else {
-        client.selectedCertificate = null
-      }
+      client.ip = data.config.ip
+      client.routes = data.config.routes
     })
-    .catch(err => {
+    .catch(e => {
+      store.commit('updateToast', {color: 'danger', text: e})
+      store.dispatch('showToast')
       clearForm()
     })
 })
@@ -111,14 +151,19 @@ watch(() => client.selectedCertificate, (newCertID, oldCertID) => {
     client.certStatus = ''
     client.certExpiresOn = ''
   } else {
-    client.certStatus = cert[0].revoked ? 'revoked' : 'valid' 
-    client.certExpiresOn = cert[0].expiresOn
+    client.certStatus = cert[0].status
+    client.certExpiresOn = cert[0].valid_not_after
   }
 })
 </script>
 
 <template>
-  <div v-if="client.id === null">
+  <div v-if="spinner" class="d-flex justify-content-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  <div v-else-if="client.id === null">
     <h5>nothing selected</h5>
   </div>
   <form v-else @submit.prevent="saveClient">
@@ -135,7 +180,7 @@ watch(() => client.selectedCertificate, (newCertID, oldCertID) => {
             v-for="certificate in client.certificates"
             :key="certificate.id"
             :value="certificate.id"
-          >{{ certificate.id + ' (' + certificate.issuedOn + ')'}}</option>
+          >{{ certificate.id + ' (' + certificate.valid_not_before + ')' + (certificate.key_exists ? '  key' : '') }}</option>
         </select>
       </div>
       <div class="col-md mb-3">
