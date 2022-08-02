@@ -31,6 +31,7 @@ func setupRouter(rts *routers.Routers) *gin.Engine {
 		gRoot.POST("/logout", rts.AppLogout)
 
 		gRoot.GET("/users/:uid/config/:cid", rts.AppDownloadConfig)
+		gRoot.GET("/users/:uid/config", rts.AppGetConfig)
 		gRoot.POST("/users/:uid/config", rts.AppCreateConfig)
 		gRoot.PUT("/users/:uid/config/:cid", rts.AppUpdateConfig)
 		gRoot.DELETE("/users/:uid/config/:cid", rts.AppDeleteConfig)
@@ -40,7 +41,7 @@ func setupRouter(rts *routers.Routers) *gin.Engine {
 		gRoot.GET("/certs", rts.AppGetCerts)
 		gRoot.DELETE("/certs/:cid", rts.AppRevokeCert)
 		gRoot.GET("/status", rts.AppGetStatus)
-		gRoot.GET("/config", rts.AppGetConfig)
+		gRoot.GET("/config", rts.AppGetServerConfig)
 	}
 
 	return r

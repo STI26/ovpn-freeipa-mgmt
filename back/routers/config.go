@@ -18,7 +18,7 @@ import (
 	"github.com/sti26/ovpn_freeipa_mgmt/serializers"
 )
 
-func (r *Routers) AppGetConfig(c *gin.Context) {
+func (r *Routers) AppGetServerConfig(c *gin.Context) {
 	var h models.Headers
 	c.BindHeader(&h)
 
@@ -32,6 +32,50 @@ func (r *Routers) AppGetConfig(c *gin.Context) {
 	c.JSON(http.StatusOK, &gin.H{
 		"error":  "",
 		"config": r.Ovpn.GetConfig(),
+	})
+}
+
+func (r *Routers) AppGetConfig(c *gin.Context) {
+
+	userID := c.Param("uid")
+
+	var h models.Headers
+	c.BindHeader(&h)
+
+	// Check Authentication
+	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping", []any{}, map[string]any{}); err != nil {
+		log.Println("[JSON_RPC] [Warn] ", err, "|", code)
+		c.JSON(code, map[string]string{"error": err.Error()})
+		return
+	}
+
+	// Get routes
+	path := filepath.Join(r.Ovpn.Config.Ccd, userID)
+	routes, err := os.ReadFile(path)
+	if err != nil {
+		log.Println("[readKey] [Warn] ", err)
+		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+
+	// Get IP
+	ipp := libs.IfconfigPoolPersist{
+		Path:    r.Ovpn.Config.Ipp,
+		Network: r.Ovpn.Server,
+	}
+	ip, err := ipp.GetIP(userID)
+	if err != nil {
+		log.Println("[ReadFile] [Warn] ", err)
+		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, &gin.H{
+		"error": "",
+		"config": map[string]string{
+			"routes": string(routes),
+			"ip":     ip,
+		},
 	})
 }
 
@@ -225,6 +269,7 @@ func (r *Routers) AppUpdateConfig(c *gin.Context) {
 
 	var data struct {
 		Routes string `json:"routes"`
+		IP     string `json:"ip"`
 	}
 	c.BindJSON(&data)
 
@@ -238,12 +283,33 @@ func (r *Routers) AppUpdateConfig(c *gin.Context) {
 		return
 	}
 
+	// Update routes
 	path := filepath.Join(r.Ovpn.Config.Ccd, userID)
 	err := os.WriteFile(path, []byte(data.Routes), 0644)
 	if err != nil {
 		log.Println("[WriteFile] [Warn] ", err)
 		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
+	}
+
+	// Update IP
+	ipp := libs.IfconfigPoolPersist{
+		Path:    r.Ovpn.Config.Ipp,
+		Network: r.Ovpn.Server,
+	}
+	ip, err := ipp.GetIP(userID)
+	if err != nil {
+		log.Println("[ReadFile] [Warn] ", err)
+		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+	if ip != data.IP {
+		err := ipp.UpdateIP(userID, data.IP)
+		if err != nil {
+			log.Println("[ReadFile] [Warn] ", err)
+			c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, map[string]string{"error": ""})
