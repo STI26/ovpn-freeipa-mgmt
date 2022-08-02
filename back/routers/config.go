@@ -23,7 +23,7 @@ func (r *Routers) AppGetConfig(c *gin.Context) {
 	c.BindHeader(&h)
 
 	// Check Authentication
-	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping"); err != nil {
+	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping", []any{}, map[string]any{}); err != nil {
 		log.Println("[JSON_RPC] [Warn] ", err, "|", code)
 		c.JSON(code, map[string]string{"error": err.Error()})
 		return
@@ -224,7 +224,7 @@ func (r *Routers) AppUpdateConfig(c *gin.Context) {
 	userID := c.Param("uid")
 
 	var data struct {
-		routes string
+		Routes string `json:"routes"`
 	}
 	c.BindJSON(&data)
 
@@ -232,14 +232,14 @@ func (r *Routers) AppUpdateConfig(c *gin.Context) {
 	c.BindHeader(&h)
 
 	// Check Authentication
-	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping"); err != nil {
+	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping", []any{}, map[string]any{}); err != nil {
 		log.Println("[JSON_RPC] [Warn] ", err, "|", code)
 		c.JSON(code, map[string]string{"error": err.Error()})
 		return
 	}
 
 	path := filepath.Join(r.Ovpn.Config.Ccd, userID)
-	err := os.WriteFile(path, []byte(data.routes), 0644)
+	err := os.WriteFile(path, []byte(data.Routes), 0644)
 	if err != nil {
 		log.Println("[WriteFile] [Warn] ", err)
 		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
@@ -257,7 +257,7 @@ func (r *Routers) AppDeleteConfig(c *gin.Context) {
 	c.BindHeader(&h)
 
 	// Check Authentication
-	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping"); err != nil {
+	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping", []any{}, map[string]any{}); err != nil {
 		log.Println("[JSON_RPC] [Warn] ", err, "|", code)
 		c.JSON(code, map[string]string{"error": err.Error()})
 		return

@@ -14,7 +14,7 @@ func (r *Routers) AppGetStatus(c *gin.Context) {
 	c.BindHeader(&h)
 
 	// Check Authentication
-	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping"); err != nil {
+	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping", []any{}, map[string]any{}); err != nil {
 		log.Println("[JSON_RPC] [Warn] ", err, "|", code)
 		c.JSON(code, map[string]string{"error": err.Error()})
 		return
