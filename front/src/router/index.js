@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Create from '../views/Create.vue'
+import Config from '../views/Config.vue'
 import Login from '../views/Login.vue'
 import store from '../store'
 
@@ -18,6 +19,12 @@ const router = createRouter({
       name: 'create',
       meta: { onlyAuth: true },
       component: Create
+    },
+    {
+      path: '/config',
+      name: 'config',
+      meta: { onlyAuth: true },
+      component: Config
     },
     {
       path: '/login',

@@ -1,7 +1,8 @@
 import { createStore } from 'vuex'
+import { Toast, Modal } from 'bootstrap'
 import auth from '@/store/auth'
 import client from '@/store/client'
-import { Toast, Modal } from 'bootstrap'
+import config from '@/store/config'
 
 
 export default createStore({
@@ -138,6 +139,7 @@ export default createStore({
   },
   modules: {
     auth,
-    client
+    client,
+    config
   }
 })
