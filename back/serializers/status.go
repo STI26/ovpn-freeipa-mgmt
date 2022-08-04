@@ -15,15 +15,15 @@ func StatusSerialazer(s string) *gin.H {
 
 		switch {
 		case strings.HasPrefix(rows[i], "TITLE"):
-			status.Title = rows[i]
+			status.Title = rows[i][6:]
 		case strings.HasPrefix(rows[i], "CLIENT_LIST"):
 			var client models.Client
 
 			row := strings.Split(rows[i], ",")
 
-			if len(row) != 12 {
-				client = models.Client{CommonName: "parce error"}
-			} else {
+			if len(row) == 12 {
+				// new version
+
 				client = models.Client{
 					CommonName:         row[1],
 					RealAddress:        row[2],
@@ -36,6 +36,20 @@ func StatusSerialazer(s string) *gin.H {
 					ClientID:           row[10],
 					PeerID:             row[11],
 				}
+			} else if len(row) == 9 {
+				// old version
+
+				client = models.Client{
+					CommonName:     row[1],
+					RealAddress:    row[2],
+					VirtualAddress: row[3],
+					BytesReceived:  row[4],
+					BytesSent:      row[5],
+					ConnectedSince: row[6],
+					Username:       row[8],
+				}
+			} else {
+				client = models.Client{CommonName: "parce error"}
 			}
 
 			status.ClientList = append(status.ClientList, client)
