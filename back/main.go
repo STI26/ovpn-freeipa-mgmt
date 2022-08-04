@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"strings"
@@ -15,6 +16,13 @@ var config = libs.GlobalConfig{}
 
 var ipaClient libs.FreeIPA
 var ovpn libs.OpenVPN
+
+var (
+	AppName     = "ovpn_freeipa_mgmt"
+	Version     = ""
+	BuildDate   = ""
+	Description = "https://github.com/STI26/ovpn-freeipa-mgmt/blob/main/README.md"
+)
 
 func setupRouter(rts *routers.Routers) *gin.Engine {
 
@@ -51,6 +59,12 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	config.Init()
+
+	if *config.Version {
+		fmt.Printf("%s\nVersion: \t%s\nBuild date: \t%s\nDescription: \t%s\n", AppName, Version, BuildDate, Description)
+		return
+	}
+
 	ipaClient = libs.FreeIPA{Domain: *config.IPADomain, Server: *config.IPAServer, Secret: config.Secret}
 	ipaServers, _ := ipaClient.GetIPAServers()
 

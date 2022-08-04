@@ -22,6 +22,8 @@ type GlobalConfig struct {
 	OvpnKeys *string
 
 	Secret string
+
+	Version *bool
 }
 
 func (cfg *GlobalConfig) Init() {
@@ -38,6 +40,8 @@ func (cfg *GlobalConfig) Init() {
 
 	cfg.OvpnConf = flag.String("ovpn-serverconf", "/etc/openvpn/server/server.conf", "Path to openvpn server.conf file.")
 	cfg.OvpnKeys = flag.String("ovpn-keys", "/etc/openvpn/keys", "Path to folder with user keys.")
+
+	cfg.Version = flag.Bool("version", false, "Show version.")
 
 	flag.Parse()
 
