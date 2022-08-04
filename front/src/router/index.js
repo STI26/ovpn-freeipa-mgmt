@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Create from '../views/Create.vue'
 import Config from '../views/Config.vue'
+import Connections from '../views/Connections.vue'
 import Login from '../views/Login.vue'
 import store from '../store'
 
@@ -25,6 +26,12 @@ const router = createRouter({
       name: 'config',
       meta: { onlyAuth: true },
       component: Config
+    },
+    {
+      path: '/connections',
+      name: 'connections',
+      meta: { onlyAuth: true },
+      component: Connections
     },
     {
       path: '/login',

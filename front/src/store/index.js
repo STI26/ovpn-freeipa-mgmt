@@ -3,6 +3,7 @@ import { Toast, Modal } from 'bootstrap'
 import auth from '@/store/auth'
 import client from '@/store/client'
 import config from '@/store/config'
+import connections from '@/store/connections'
 
 
 export default createStore({
@@ -140,6 +141,7 @@ export default createStore({
   modules: {
     auth,
     client,
-    config
+    config,
+    connections
   }
 })
