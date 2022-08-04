@@ -155,7 +155,8 @@ func (ipa FreeIPA) Jrpc(ctx context.Context, token, method string, params ...int
 
 	host, _, err := ParseToken(token, ipa.Secret)
 	if err != nil {
-		return nil, 401, err
+		log.Println("[Warn] ", err)
+		return nil, 401, errors.New("401, Unauthorized")
 	}
 
 	baseUrl := "https://" + host + "/ipa"
