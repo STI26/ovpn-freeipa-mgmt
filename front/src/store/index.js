@@ -21,7 +21,7 @@ export default createStore({
   },
   getters: {
     backendURL (state) {
-      return state.backendURL || 'http://localhost:8000'
+      return state.backendURL || window.location.origin + ':8000'
     },
     searchString (state) {
       return state.searchString
