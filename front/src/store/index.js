@@ -4,11 +4,13 @@ import auth from '@/store/auth'
 import client from '@/store/client'
 import config from '@/store/config'
 import connections from '@/store/connections'
+import about from '@/store/about'
 
 
 export default createStore({
   state: {
     backendURL: import.meta.env.VITE_API_URL,
+    version: import.meta.env.VITE_VERSION,
     searchString: '',
     toast: {obj: null, text: '', color: ''},
     modal: {
@@ -31,6 +33,9 @@ export default createStore({
     },
     modal (state) {
       return state.modal
+    },
+    version (state) {
+      return state.version || 'v1.0.0'
     }
   },
   mutations: {
@@ -142,6 +147,7 @@ export default createStore({
     auth,
     client,
     config,
-    connections
+    connections,
+    about
   }
 })

@@ -1,5 +1,6 @@
 VERSION_BACK  = v1.0.1
 VERSION_FRONT = v1.0.1
+API_URL       = /api
 BUILD_DATE    = $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 all: build_back build_front
@@ -21,6 +22,7 @@ build_front:
 		--file Dockerfile.front \
 		--rm --compress \
 		--build-arg VERSION="$(VERSION_FRONT)" \
+		--build-arg API_URL="$(API_URL)" \
 		--build-arg DATE="$(BUILD_DATE)" \
 		--tag imagelist/ovpn_freeipa_mgmt:$(VERSION_FRONT)-ui \
 		--tag imagelist/ovpn_freeipa_mgmt:latest-ui \

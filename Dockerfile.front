@@ -3,7 +3,12 @@
 ##
 FROM node:lts-alpine as build-stage
 
+ARG VERSION=v1.0.0
+ARG API_URL=/api
+
 WORKDIR /app
+
+RUN echo "VITE_API_URL=${API_URL}\nVITE_VERSION=${VERSION}" > .env
 
 COPY front/ ./
 

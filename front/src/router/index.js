@@ -3,6 +3,7 @@ import Home from '../views/Home.vue'
 import Create from '../views/Create.vue'
 import Config from '../views/Config.vue'
 import Connections from '../views/Connections.vue'
+import About from '../views/About.vue'
 import Login from '../views/Login.vue'
 import store from '../store'
 
@@ -32,6 +33,12 @@ const router = createRouter({
       name: 'connections',
       meta: { onlyAuth: true },
       component: Connections
+    },
+    {
+      path: '/about',
+      name: 'about',
+      meta: { onlyAuth: true },
+      component: About
     },
     {
       path: '/login',

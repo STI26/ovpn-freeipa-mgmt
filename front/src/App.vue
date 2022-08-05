@@ -69,6 +69,7 @@ onMounted(() => {
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
             <li><router-link class="dropdown-item" to="/connections">Connections</router-link></li>
             <li><router-link class="dropdown-item" to="/config">Config</router-link></li>
+            <li><router-link class="dropdown-item" to="/about">About</router-link></li>
             <li><hr class="dropdown-divider" /></li>
             <li><button class="dropdown-item" @click="logout" type="button">Logout</button></li>
           </ul>
