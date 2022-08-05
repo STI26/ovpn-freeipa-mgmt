@@ -33,7 +33,7 @@ func setupRouter(rts *routers.Routers) *gin.Engine {
 	// config.AllowHeaders = []string{"Content-Type", "Authorization"}
 	r.Use(cors.New(cfg))
 
-	gRoot := r.Group("/")
+	gRoot := r.Group("/api/")
 	{
 		gRoot.POST("/login", rts.AppLogin)
 		gRoot.POST("/logout", rts.AppLogout)
