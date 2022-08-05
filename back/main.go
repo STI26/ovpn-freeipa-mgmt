@@ -48,6 +48,8 @@ func setupRouter(rts *routers.Routers) *gin.Engine {
 		gRoot.GET("/hosts", rts.AppGetHosts)
 		gRoot.GET("/certs", rts.AppGetCerts)
 		gRoot.DELETE("/certs/:cid", rts.AppRevokeCert)
+
+		gRoot.GET("/version", rts.AppGetVersion)
 		gRoot.GET("/status", rts.AppGetStatus)
 		gRoot.GET("/config", rts.AppGetServerConfig)
 	}
@@ -59,8 +61,9 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	config.Init()
+	config.Version = &Version
 
-	if *config.Version {
+	if *config.ShowVersion {
 		fmt.Printf("%s\nVersion: \t%s\nBuild date: \t%s\nDescription: \t%s\n", AppName, Version, BuildDate, Description)
 		return
 	}

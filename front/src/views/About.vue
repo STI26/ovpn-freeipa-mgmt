@@ -1,15 +1,18 @@
 <script setup>
-import { reactive } from 'vue'
+import { onMounted, reactive } from 'vue'
 import { useStore } from 'vuex'
 
 const store = useStore()
 
 const version = reactive({
+  ipa: '',
   back: '',
-  front: store.getters.version
+  front: ''
 })
 
 onMounted(() => {
+  version.front = store.getters.version
+  
   store
     .dispatch('getApiVerion')
     .then((data) => {
@@ -18,6 +21,7 @@ onMounted(() => {
       }
 
       version.back = data.version
+      version.ipa = data.ipa_version
     })
     .catch((e) => {
       store.commit('updateToast', { color: 'danger', text: e })
@@ -32,6 +36,10 @@ onMounted(() => {
     <div class="card-body">
       <table class="table table-hover">
         <tbody>
+          <tr>
+            <th scope="row">IPA</th>
+            <td>{{ version.ipa }}</td>
+          </tr>
           <tr>
             <th scope="row">Backend</th>
             <td>{{ version.back }}</td>
