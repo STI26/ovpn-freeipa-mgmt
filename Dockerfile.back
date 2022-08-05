@@ -1,0 +1,30 @@
+##
+## Build
+##
+FROM golang:1.18-buster AS build
+
+USER root
+
+WORKDIR /app
+
+COPY back/ ./
+RUN go mod download
+RUN go mod verify
+
+RUN make
+
+##
+## Deploy
+##
+FROM gcr.io/distroless/base-debian10
+
+WORKDIR /opt/app/
+
+COPY --from=build /app/ovpn_freeipa_mgmt ovpn_freeipa_mgmt
+COPY back/assets/ assets/
+
+EXPOSE 8000
+
+USER nonroot:nonroot
+
+ENTRYPOINT ["/opt/app/ovpn_freeipa_mgmt"]

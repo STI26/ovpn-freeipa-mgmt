@@ -1,0 +1,51 @@
+version: "3.7"
+
+services:
+  back:
+    image: imagelist/ovpn_freeipa_mgmt:latest-api
+    user: root
+    restart: always
+    container_name: ovpn-mgmt-back
+    command: >
+        --addr=0.0.0.0:8000
+        --ipa-server=https://ipa.local.net
+        --ipa-allowgroup=admins
+        --ipa-cacn=openVPN
+    ports:
+      - 8000:8000
+    volumes:
+      - type: bind
+        source: /etc/openvpn/
+        target: /etc/openvpn/
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    networks:
+      - ovpn_mgmt
+
+  front:
+    image: imagelist/ovpn_freeipa_mgmt:latest-ui
+    user: root
+    restart: always
+    container_name: ovpn-mgmt-front
+    ports:
+      - 8080:80
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    depends_on:
+      - back
+    networks:
+      - ovpn_mgmt
+
+networks:
+  ovpn_mgmt:
+    name: ovpn_mgmt
+    driver: bridge
+    ipam:
+      driver: default
+      config: []
