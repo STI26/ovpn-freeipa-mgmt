@@ -20,6 +20,10 @@ const logout = () => {
   router.push('/login')
 }
 
+watch(() => router.currentRoute.value, () => {
+  query.value = ''
+})
+
 watch(() => query.value, (newQ, oldQ) => {
   store.commit('updateSearchString', newQ)
 })
