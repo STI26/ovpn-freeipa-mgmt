@@ -12,16 +12,20 @@ const spinner = reactive({
   hosts: true
 })
 
+const isInclude = (clientItem, str) => {
+  return clientItem.name.toLocaleLowerCase().includes(str.toLocaleLowerCase())
+}
+
 const filteredUsers = computed(() => {
   return store.getters.searchString === ''
     ? clients.users
-    : clients.users.filter((item) => item.name.includes(store.getters.searchString))
+    : clients.users.filter((item) => isInclude(item, store.getters.searchString))
 })
 
 const filteredHosts = computed(() => {
   return store.getters.searchString === ''
     ? clients.hosts
-    : clients.hosts.filter((item) => item.name.includes(store.getters.searchString))
+    : clients.hosts.filter((item) => isInclude(item, store.getters.searchString))
 })
 
 watch(() => store.getters.getClientID, (newID, oldID) => {
