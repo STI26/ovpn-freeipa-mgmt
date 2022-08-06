@@ -1,11 +1,24 @@
 <script setup>
-import { onMounted, ref, watch, computed } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useStore } from 'vuex'
 
 const store = useStore()
 
 const connections = ref(null)
 const version = ref('')
+
+const isInclude = (connItem, str) => {
+  const lstr = str.toLocaleLowerCase()
+  return (connItem.common_name.toLocaleLowerCase().includes(lstr) ||
+          connItem.real_address.toLocaleLowerCase().includes(lstr) ||
+          connItem.virtual_address.toLocaleLowerCase().includes(lstr))
+}
+
+const filteredConnections = computed(() => {
+  return store.getters.searchString === ''
+    ? connections.value
+    : connections.value.filter((item) => isInclude(item, store.getters.searchString))
+})
 
 const loadConnections = () => {
   store
@@ -59,7 +72,7 @@ onMounted(() => {
         </thead>
         <tbody>
           <tr
-            v-for="(client, idx) in connections"
+            v-for="(client, idx) in filteredConnections"
             :key="client.common_name + client.connected_since"
           >
             <th scope="row">{{ idx + 1 }}</th>
