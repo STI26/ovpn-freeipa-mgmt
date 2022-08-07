@@ -14,46 +14,46 @@ import (
 )
 
 type OpenVPN struct {
-	Server   Network
-	Config   OvpnOptions
-	IPAHosts []string
+	Server   Network     `json:"server"`
+	Config   OvpnOptions `json:"config"`
+	IPAHosts []string    `json:"ipa_hosts,omitempty"`
 }
 
 type Network struct {
-	IP   string
-	Mask string
+	IP   string `json:"ip"`
+	Mask string `json:"mask"`
 }
 
 type OvpnOptions struct {
 	// options with path
-	Crl string
+	Crl string `json:"crl"`
 
-	CA      string
-	TlsAuth string
+	CA      string `json:"ca"`
+	TlsAuth string `json:"tls_auth"`
 
-	Cert string
-	Key  string
+	Cert string `json:"cert"`
+	Key  string `json:"key"`
 
-	Ccd string
-	Ipp string
+	Ccd string `json:"ccd"`
+	Ipp string `json:"ipp"`
 
-	Status string
+	Status string `json:"status"`
 
 	// options with key
-	Local       string
-	Port        string
-	Proto       string
-	Dev         string
-	CompLzo     string
-	TunMtu      string
-	DataCiphers string
-	Auth        string
+	Local       string `json:"local"`
+	Port        string `json:"port"`
+	Proto       string `json:"proto"`
+	Dev         string `json:"dev"`
+	CompLzo     string `json:"comp_lzo"`
+	TunMtu      string `json:"tun_mtu"`
+	DataCiphers string `json:"data_cipthers"`
+	Auth        string `json:"auth"`
 }
 
 func (ovpn *OpenVPN) Init(pathToConf string) {
 	b, err := os.ReadFile(pathToConf)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	for _, i := range strings.Split(string(b), "\n") {
@@ -238,76 +238,104 @@ func (ovpn *OpenVPN) GetStatusInfo() (string, error) {
 }
 
 func (ovpn *OpenVPN) GetConfig() *map[string]OvpnOptions {
+	var name OvpnOptions
 	var status OvpnOptions
+	var message OvpnOptions
 
 	// Check CRL
+	name.Crl = "Certificate Revocation List"
 	if b, err := os.ReadFile(ovpn.Config.Crl); err != nil {
-		status.Crl = "file not found"
+		status.Crl = "false"
+		message.Crl = "file not found"
 	} else {
-		status.Crl = "exist, Issuer: "
+		status.Crl = "true"
+		message.Crl = "Issuer: "
 
 		if crl, err := x509.ParseDERCRL(b); err == nil {
-			status.Crl += crl.TBSCertList.Issuer.String()
+			message.Crl += crl.TBSCertList.Issuer.String()
 		}
 	}
 
 	// Check CA
+	name.CA = "Certificate Authority"
 	if b, err := os.ReadFile(ovpn.Config.CA); err != nil {
-		status.CA = "file not found"
+		status.CA = "false"
+		message.CA = "file not found"
 	} else {
-		status.CA = "exist, Issuer: "
+		status.CA = "true"
+		message.CA = "Issuer: "
 
 		der, _ := pem.Decode(b)
 		if ca, err := x509.ParseCertificate(der.Bytes); err == nil {
-			status.CA += ca.Issuer.String()
+			message.CA += ca.Issuer.String()
 		}
 	}
 
 	// Check tls-auth
+	name.TlsAuth = "TLS Auth HMAC signature"
 	if _, err := os.Stat(ovpn.Config.TlsAuth); err != nil {
-		status.TlsAuth = "file not found"
+		status.TlsAuth = "false"
+		message.TlsAuth = "file not found"
 	} else {
-		status.TlsAuth = "exist"
+		status.TlsAuth = "true"
+		message.TlsAuth = ""
 	}
 
 	// Check cert
+	name.Cert = "Server Certificate"
 	if _, err := os.Stat(ovpn.Config.Cert); err != nil {
-		status.Cert = "file not found"
+		status.Cert = "false"
+		message.Cert = "file not found"
 	} else {
-		status.Cert = "exist"
+		status.Cert = "true"
+		message.Cert = ""
 	}
 
 	// Check key
+	name.Key = "Server Private Key"
 	if _, err := os.Stat(ovpn.Config.Key); err != nil {
-		status.Key = "file not found"
+		status.Key = "false"
+		message.Key = "file not found"
 	} else {
-		status.Key = "exist"
+		status.Key = "true"
+		message.Key = ""
 	}
 
 	// Check ccd
+	name.Ccd = "Client Config Dir"
 	if _, err := os.Stat(ovpn.Config.Ccd); err != nil {
-		status.Ccd = "file not found"
+		status.Ccd = "false"
+		message.Ccd = "folder not found"
 	} else {
-		status.Ccd = "exist"
+		status.Ccd = "true"
+		message.Ccd = ""
 	}
 
 	// Check ipp
+	name.Ipp = "Ifconfig Pool Persist"
 	if _, err := os.Stat(ovpn.Config.Ipp); err != nil {
-		status.Ipp = "file not found"
+		status.Ipp = "false"
+		message.Ipp = "file not found"
 	} else {
-		status.Ipp = "exist"
+		status.Ipp = "true"
+		message.Ipp = ""
 	}
 
 	// Check status
+	name.Status = "Status File"
 	if _, err := os.Stat(ovpn.Config.Status); err != nil {
-		status.Status = "file not found"
+		status.Status = "false"
+		message.Status = "file not found"
 	} else {
-		status.Status = "exist"
+		status.Status = "true"
+		message.Status = ""
 	}
 
 	res := map[string]OvpnOptions{
-		"value":  ovpn.Config,
-		"status": status,
+		"name":    name,
+		"value":   ovpn.Config,
+		"status":  status,
+		"message": message,
 	}
 
 	return &res
