@@ -64,7 +64,15 @@ func main() {
 	config.Version = &Version
 
 	if *config.ShowVersion {
-		fmt.Printf("%s\nVersion: \t%s\nBuild date: \t%s\nDescription: \t%s\n", AppName, Version, BuildDate, Description)
+		fmt.Printf(
+			"%s\n"+
+				"Version: \t%s\n"+
+				"Build date: \t%s\n"+
+				"Description: \t%s\n",
+			AppName,
+			Version,
+			BuildDate,
+			Description)
 		return
 	}
 
