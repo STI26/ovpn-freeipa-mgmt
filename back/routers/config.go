@@ -29,6 +29,9 @@ func (r *Routers) AppGetServerConfig(c *gin.Context) {
 		return
 	}
 
+	// Reload config from file
+	r.Ovpn.Init(*r.Cfg.OvpnConf)
+
 	c.JSON(http.StatusOK, &gin.H{
 		"error":  "",
 		"config": r.Ovpn.GetConfig(),
@@ -139,7 +142,7 @@ func (r *Routers) AppDownloadConfig(c *gin.Context) {
 
 	// Fill template
 	config := new(bytes.Buffer)
-	tmpl, err := template.ParseFiles("assets/config.tmpl")
+	tmpl, err := template.ParseFiles("assets/client.tmpl")
 	if err != nil {
 		log.Println("[parseTemplate] [Warn] ", err)
 		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
