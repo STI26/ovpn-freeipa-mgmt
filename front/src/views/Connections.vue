@@ -58,7 +58,7 @@ onMounted(() => {
           <span class="visually-hidden">Loading...</span>
         </div>
       </div>
-      <table class="table table-hover">
+      <table v-else class="table table-hover">
         <thead>
           <tr>
             <th scope="col">#</th>
