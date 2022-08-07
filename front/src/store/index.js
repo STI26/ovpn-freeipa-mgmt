@@ -89,7 +89,7 @@ export default createStore({
             throw `${url}: ${response.status} (${response.statusText})`
           }
         } catch (error) {
-          throw `${url}: ${response.status} (${response.statusText})`
+          throw error
         }
       }
 
