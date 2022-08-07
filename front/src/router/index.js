@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
-import Create from '../views/Create.vue'
 import Config from '../views/Config.vue'
+import ServerConfigCreate from '../views/ServerConfigCreate.vue'
+import ClientConfigCreate from '../views/ClientConfigCreate.vue'
 import Connections from '../views/Connections.vue'
 import About from '../views/About.vue'
 import Login from '../views/Login.vue'
@@ -21,13 +22,19 @@ const router = createRouter({
       path: '/create',
       name: 'create',
       meta: { onlyAuth: true, navbar: true },
-      component: Create
+      component: ClientConfigCreate
     },
     {
       path: '/config',
       name: 'config',
       meta: { onlyAuth: true, navbar: true },
       component: Config
+    },
+    {
+      path: '/config/create',
+      name: 'config-create',
+      meta: { onlyAuth: true, navbar: true },
+      component: ServerConfigCreate
     },
     {
       path: '/connections',

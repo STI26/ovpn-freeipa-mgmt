@@ -6,5 +6,12 @@ export default {
         method: 'GET'
       })
     },
+    async createServer ({ dispatch }, data) {
+      return dispatch('fetch', {
+        path: '/config',
+        method: 'POST',
+        body: data
+      })
+    }
   }
 }

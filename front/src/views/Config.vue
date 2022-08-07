@@ -5,6 +5,7 @@ import { useStore } from 'vuex'
 const store = useStore()
 
 const config = ref(null)
+const configError = ref('')
 
 const isInclude = (cfgItem, str) => {
   const lstr = str.toLocaleLowerCase()
@@ -26,8 +27,8 @@ const cfgToArray = (obj) => {
     list.push({
       name: key,
       value: val,
-      status: false,
-      message: obj.status[key]
+      status: obj.status[key],
+      message: obj.message[key]
     })
   }
   
@@ -38,10 +39,7 @@ const loadConfig = () => {
   store
     .dispatch('getServerConfig')
     .then((data) => {
-      if (data.error !== '') {
-        throw data.error
-      }
-
+      configError.value = data.error
       config.value = cfgToArray(data.config)
     })
     .catch((e) => {
@@ -64,12 +62,19 @@ onMounted(() => {
           <span class="visually-hidden">Loading...</span>
         </div>
       </div>
+      <div v-else-if="configError">
+      {{ configError }}
+      <router-link class="btn btn-outline-primary float-end" to="/config/create">Create</router-link>
+      </div>
       <ol v-else class="list-group list-group-numbered">
         <li v-for="item of filteredConfig" :key="item.name"
           class="list-group-item d-flex justify-content-between align-items-start"
         >
           <div class="ms-2 me-auto">
-            <div class="fw-bold">{{ item.name }}:</div>
+            <div class="fw-bold">
+            <span v-if="item.status === 'true'" class="text-success">&#10004;</span>
+            <span v-else-if="item.status === 'false'" class="text-danger">&#10007;</span>
+            {{ item.name }}:</div>
             {{ item.value }} <span v-if="item.message"> ({{ item.message }})</span>
           </div>
         </li>
