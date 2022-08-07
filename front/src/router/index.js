@@ -5,6 +5,7 @@ import Config from '../views/Config.vue'
 import Connections from '../views/Connections.vue'
 import About from '../views/About.vue'
 import Login from '../views/Login.vue'
+import NotFound from '../views/404.vue'
 import store from '../store'
 
 const router = createRouter({
@@ -13,38 +14,44 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      meta: { onlyAuth: true },
+      meta: { onlyAuth: true, navbar: true },
       component: Home
     },
     {
       path: '/create',
       name: 'create',
-      meta: { onlyAuth: true },
+      meta: { onlyAuth: true, navbar: true },
       component: Create
     },
     {
       path: '/config',
       name: 'config',
-      meta: { onlyAuth: true },
+      meta: { onlyAuth: true, navbar: true },
       component: Config
     },
     {
       path: '/connections',
       name: 'connections',
-      meta: { onlyAuth: true },
+      meta: { onlyAuth: true, navbar: true },
       component: Connections
     },
     {
       path: '/about',
       name: 'about',
-      meta: { onlyAuth: true },
+      meta: { onlyAuth: true, navbar: true },
       component: About
     },
     {
       path: '/login',
       name: 'login',
-      meta: { onlyAuth: false },
+      meta: { onlyAuth: false, navbar: false },
       component: Login
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: '404',
+      meta: { onlyAuth: false, navbar: false },
+      component: NotFound
     }
   ]
 })

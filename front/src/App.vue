@@ -9,10 +9,10 @@ const store = useStore()
 const query = ref('')
 const router = useRouter()
 
-const mainbg = computed(() => {
-  return router.currentRoute.value.name === 'login'
-    ? "bg-light"
-    : ""
+const enableNavBar = computed(() => {
+  return router.currentRoute.value.meta.navbar
+    ? ""
+    : "bg-light"
 })
 
 const logout = () => {
@@ -38,7 +38,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <header v-if="!mainbg">
+  <header v-if="!enableNavBar">
     <nav class="navbar fixed-top navbar-light bg-light">
       <div class="container-fluid">
 
@@ -83,7 +83,7 @@ onMounted(() => {
     </nav>
   </header>
 
-  <main aria-live="polite" aria-atomic="true" class="position-relative" :class="mainbg">
+  <main aria-live="polite" aria-atomic="true" class="position-relative" :class="enableNavBar">
     <div class="container">
       <RouterView />
     </div>
