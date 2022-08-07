@@ -28,3 +28,8 @@ build_front:
 		--tag imagelist/ovpn_freeipa_mgmt:latest-ui \
 		.
 
+push:
+	docker push imagelist/ovpn_freeipa_mgmt:$(VERSION_BACK)-api
+	docker push imagelist/ovpn_freeipa_mgmt:latest-api
+	docker push imagelist/ovpn_freeipa_mgmt:$(VERSION_FRONT)-ui
+	docker push imagelist/ovpn_freeipa_mgmt:latest-ui
