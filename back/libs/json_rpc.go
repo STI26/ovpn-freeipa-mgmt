@@ -169,7 +169,7 @@ func (ipa FreeIPA) Jrpc(ctx context.Context, token, method string, params ...int
 
 	resp, err := rpcClient.Call(ctx, method, params...)
 	if err != nil {
-		return nil, resp.Error.Code, err
+		return nil, 404, err
 	}
 
 	if resp.Error != nil {
