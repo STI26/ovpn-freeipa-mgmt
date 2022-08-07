@@ -69,6 +69,13 @@ func (r *Routers) AppRevokeCert(c *gin.Context) {
 		return
 	}
 
+	err = r.Ovpn.UpdateCrl()
+	if err != nil {
+		log.Println("[UpdateCrl] [Warn] ", err)
+		c.JSON(code, map[string]string{"error": err.Error()})
+		return
+	}
+
 	c.JSON(code, map[string]string{"error": ""})
 }
 

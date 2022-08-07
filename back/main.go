@@ -52,6 +52,7 @@ func setupRouter(rts *routers.Routers) *gin.Engine {
 		gRoot.GET("/version", rts.AppGetVersion)
 		gRoot.GET("/status", rts.AppGetStatus)
 		gRoot.GET("/config", rts.AppGetServerConfig)
+		gRoot.POST("/config", rts.AppCreateServerConfig)
 	}
 
 	return r

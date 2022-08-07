@@ -1,0 +1,45 @@
+# Server config
+local {{ .options.Local }}
+
+server {{ .network.IP }} {{ .network.Mask }}
+management localhost 7505
+crl-verify {{ if .options.Crl }}{{ .options.Crl }}{{ else }}/etc/openvpn/crl.bin{{ end }}
+
+# Push routes to the client to allow it
+push "route 10.10.2.0 255.255.255.0"
+
+# Connect config
+port {{ if .options.Port }}{{ .options.Port }}{{ else }}1194{{ end }}
+proto {{ if .options.Proto }}{{ .options.Proto }}{{ else }}tcp{{ end }}
+dev {{ if .options.Dev }}{{ .options.Dev }}{{ else }}tun{{ end }}
+topology {{ if .options.Topology }}{{ .options.Topology }}{{ else }}subnet{{ end }}
+remote-cert-tls client
+persist-key
+
+persist-tun
+comp-lzo {{ if .options.CompLzo }}{{ .options.CompLzo }}{{ else }}no{{ end }}
+tun-mtu {{ if .options.TunMtu }}{{ .options.TunMtu }}{{ else }}1500{{ end }}
+
+# Cert config
+ca {{ if .options.CA }}{{ .options.CA }}{{ else }}/etc/openvpn/ca.crt{{ end }}
+tls-auth {{ if .options.TlsAuth }}{{ .options.TlsAuth }}{{ else }}/etc/openvpn/ta.key{{ end }} 0
+dh {{ if .options.DH }}{{ .options.DH }}{{ else }}/etc/openvpn/dh.pem{{ end }}
+cert {{ if .options.Cert }}{{ .options.Cert }}{{ else }}/etc/openvpn/server.crt{{ end }}
+key {{ if .options.Key }}{{ .options.Key }}{{ else }}/etc/openvpn/server.key{{ end }}
+
+# Client config
+ifconfig-pool-persist {{ if .options.Ipp }}{{ .options.Ipp }}{{ else }}/etc/openvpn/client/ipp.txt{{ end }}
+client-config-dir {{ if .options.Ccd }}{{ .options.Ccd }}{{ else }}/etc/openvpn/ccd/{{ end }}
+keepalive 60 120
+{{ if .options.ClientToClient }}client-to-client{{ end }}
+
+# Encryption config
+data-ciphers {{ if .options.DataCiphers }}{{ .options.DataCiphers }}{{ else }}AES-256-GCM:AES-128-GCM:AES-256-CBC{{ end }}
+auth {{ if .options.Auth }}{{ .options.Auth }}{{ else }}SHA256{{ end }}
+
+# Log config
+status {{ if .options.Status }}{{ .options.Status }}{{ else }}/etc/openvpn/openvpn-status.log{{ end }}
+status-version 2
+log-append /var/log/openvpn/openvpn-append.log
+verb 3
+daemon

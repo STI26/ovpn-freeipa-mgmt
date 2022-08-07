@@ -18,26 +18,6 @@ import (
 	"github.com/sti26/ovpn_freeipa_mgmt/serializers"
 )
 
-func (r *Routers) AppGetServerConfig(c *gin.Context) {
-	var h models.Headers
-	c.BindHeader(&h)
-
-	// Check Authentication
-	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping", []any{}, map[string]any{}); err != nil {
-		log.Println("[JSON_RPC] [Warn] ", err, "|", code)
-		c.JSON(code, map[string]string{"error": err.Error()})
-		return
-	}
-
-	// Reload config from file
-	r.Ovpn.Init(*r.Cfg.OvpnConf)
-
-	c.JSON(http.StatusOK, &gin.H{
-		"error":  "",
-		"config": r.Ovpn.GetConfig(),
-	})
-}
-
 func (r *Routers) AppGetConfig(c *gin.Context) {
 
 	userID := c.Param("uid")
@@ -46,7 +26,7 @@ func (r *Routers) AppGetConfig(c *gin.Context) {
 	c.BindHeader(&h)
 
 	// Check Authentication
-	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping", []any{}, map[string]any{}); err != nil {
+	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping", []any{}, &gin.H{}); err != nil {
 		log.Println("[JSON_RPC] [Warn] ", err, "|", code)
 		c.JSON(code, map[string]string{"error": err.Error()})
 		return
@@ -276,7 +256,7 @@ func (r *Routers) AppUpdateConfig(c *gin.Context) {
 	c.BindHeader(&h)
 
 	// Check Authentication
-	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping", []any{}, map[string]any{}); err != nil {
+	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping", []any{}, &gin.H{}); err != nil {
 		log.Println("[JSON_RPC] [Warn] ", err, "|", code)
 		c.JSON(code, map[string]string{"error": err.Error()})
 		return
@@ -317,7 +297,7 @@ func (r *Routers) AppDeleteConfig(c *gin.Context) {
 	c.BindHeader(&h)
 
 	// Check Authentication
-	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping", []any{}, map[string]any{}); err != nil {
+	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping", []any{}, &gin.H{}); err != nil {
 		log.Println("[JSON_RPC] [Warn] ", err, "|", code)
 		c.JSON(code, map[string]string{"error": err.Error()})
 		return

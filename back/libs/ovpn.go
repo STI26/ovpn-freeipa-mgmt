@@ -1,9 +1,11 @@
 package libs
 
 import (
+	"bytes"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
+	"html/template"
 	"log"
 	"net"
 	"net/url"
@@ -30,6 +32,7 @@ type OvpnOptions struct {
 
 	CA      string `json:"ca"`
 	TlsAuth string `json:"tls_auth"`
+	DH      string `json:"dh"`
 
 	Cert string `json:"cert"`
 	Key  string `json:"key"`
@@ -40,20 +43,23 @@ type OvpnOptions struct {
 	Status string `json:"status"`
 
 	// options with key
-	Local       string `json:"local"`
-	Port        string `json:"port"`
-	Proto       string `json:"proto"`
-	Dev         string `json:"dev"`
-	CompLzo     string `json:"comp_lzo"`
-	TunMtu      string `json:"tun_mtu"`
-	DataCiphers string `json:"data_cipthers"`
-	Auth        string `json:"auth"`
+	Local          string `json:"local"`
+	Port           string `json:"port"`
+	Proto          string `json:"proto"`
+	Dev            string `json:"dev"`
+	CompLzo        string `json:"comp_lzo"`
+	TunMtu         string `json:"tun_mtu"`
+	DataCiphers    string `json:"data_cipthers"`
+	Auth           string `json:"auth"`
+	Topology       string `json:"topology"`
+	ClientToClient bool   `json:"client_to_client"`
 }
 
-func (ovpn *OpenVPN) Init(pathToConf string) {
+func (ovpn *OpenVPN) Init(pathToConf string) error {
 	b, err := os.ReadFile(pathToConf)
 	if err != nil {
 		log.Println(err)
+		return err
 	}
 
 	for _, i := range strings.Split(string(b), "\n") {
@@ -68,6 +74,8 @@ func (ovpn *OpenVPN) Init(pathToConf string) {
 			ovpn.Config.CA = strings.TrimSpace(row[1])
 		case "tls-auth":
 			ovpn.Config.TlsAuth = strings.TrimSpace(row[1])
+		case "dh":
+			ovpn.Config.DH = strings.TrimSpace(row[1])
 		case "cert":
 			ovpn.Config.Cert = strings.TrimSpace(row[1])
 		case "key":
@@ -97,8 +105,14 @@ func (ovpn *OpenVPN) Init(pathToConf string) {
 			ovpn.Config.DataCiphers = strings.TrimSpace(row[1])
 		case "auth":
 			ovpn.Config.Auth = strings.TrimSpace(row[1])
+		case "topology":
+			ovpn.Config.Topology = strings.TrimSpace(row[1])
+		case "client-to-client":
+			ovpn.Config.ClientToClient = true
 		}
 	}
+
+	return nil
 }
 
 func (ovpn *OpenVPN) getIPAServer() string {
@@ -178,6 +192,36 @@ func (ovpn *OpenVPN) GetClientConfig(client string) (string, error) {
 	return string(b), nil
 }
 
+func (ovpn *OpenVPN) CreateServerConfig(path string) error {
+	// Fill template
+	data := new(bytes.Buffer)
+	tmpl, err := template.ParseFiles("assets/server.tmpl")
+	if err != nil {
+		log.Println("[parseTemplate] [Error] ", err)
+		return err
+	}
+
+	err = tmpl.Execute(data, map[string]interface{}{
+		"network": ovpn.Server,
+		"options": ovpn.Config,
+	})
+	if err != nil {
+		log.Println("[tmpl.Execute] [Error] ", err)
+		return err
+	}
+
+	err = os.WriteFile(path, data.Bytes(), 0644)
+	if err != nil {
+		log.Println("[WriteFile] [Error] ", err)
+		return err
+	}
+
+	ovpn.UpdateCA()
+	ovpn.UpdateCrl()
+
+	return nil
+}
+
 func (ovpn *OpenVPN) UpdateClientConfig(client, data string) error {
 	path := filepath.Join(ovpn.Config.Ccd, client)
 
@@ -237,7 +281,7 @@ func (ovpn *OpenVPN) GetStatusInfo() (string, error) {
 	return string(b), nil
 }
 
-func (ovpn *OpenVPN) GetConfig() *map[string]OvpnOptions {
+func (ovpn *OpenVPN) GetServerConfig() *map[string]OvpnOptions {
 	var name OvpnOptions
 	var status OvpnOptions
 	var message OvpnOptions
@@ -279,6 +323,16 @@ func (ovpn *OpenVPN) GetConfig() *map[string]OvpnOptions {
 	} else {
 		status.TlsAuth = "true"
 		message.TlsAuth = ""
+	}
+
+	// Check dh
+	name.DH = "Diffie-Hellman"
+	if _, err := os.Stat(ovpn.Config.DH); err != nil {
+		status.DH = "false"
+		message.DH = "file not found"
+	} else {
+		status.DH = "true"
+		message.DH = ""
 	}
 
 	// Check cert

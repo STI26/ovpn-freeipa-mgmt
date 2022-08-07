@@ -1,7 +1,7 @@
 #Client config
 client
 resolv-retry infinite
-remote {{ .serverConfig.Local }}
+remote {{ .options.Local }}
 
 #Connect config
 port {{ .serverConfig.Port }}
@@ -28,7 +28,6 @@ auth {{ .serverConfig.Auth }}
 {{ end }}
 
 #Log config
-status /var/log/openvpn/openvpn-status.log
 log-append /var/log/openvpn/openvpn-append.log
 verb 3
 
