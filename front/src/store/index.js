@@ -23,7 +23,7 @@ export default createStore({
   },
   getters: {
     backendURL (state) {
-      return state.backendURL || window.location.origin + ':8000'
+      return state.backendURL || window.location.protocol + '//' + window.location.hostname + ':8000/api'
     },
     searchString (state) {
       return state.searchString
@@ -81,13 +81,20 @@ export default createStore({
       }
       
       if (!response.ok) {
-        const r = await response.json()
-
-        if (r.error) {
-          throw r.error
-        } else {
+        try {
+          const r = await response.json()
+          if (r.error) {
+            throw r.error
+          } else {
+            throw `${url}: ${response.status} (${response.statusText})`
+          }
+        } catch (error) {
           throw `${url}: ${response.status} (${response.statusText})`
         }
+      }
+
+      if (response.type === 'basic') {
+        throw `${url}: 400 (Bad Request)`
       }
       
       return response.json()
