@@ -7,6 +7,8 @@ USER root
 
 WORKDIR /app
 
+ENV VERSION $VERSION
+
 COPY back/ ./
 RUN go mod download
 RUN go mod verify
