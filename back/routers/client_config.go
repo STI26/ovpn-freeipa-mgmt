@@ -93,7 +93,7 @@ func (r *Routers) AppDownloadConfig(c *gin.Context) {
 		return
 	}
 
-	cert := serializers.CertSerialazer(&obj)
+	cert := serializers.CertsSerialazer(&obj)
 
 	// Get user key
 	path := filepath.Join(*r.Cfg.OvpnKeys, fmt.Sprintf("%d.key", certID))

@@ -53,6 +53,11 @@ func setupRouter(rts *routers.Routers) *gin.Engine {
 		gRoot.GET("/status", rts.AppGetStatus)
 		gRoot.GET("/config", rts.AppGetServerConfig)
 		gRoot.POST("/config", rts.AppCreateServerConfig)
+		gRoot.POST("/config/cert", rts.AppCreateServerCert)
+		gRoot.POST("/config/ca", rts.AppCreateCA)
+		gRoot.POST("/config/crl", rts.AppCreateCrl)
+		gRoot.POST("/config/dh", rts.AppCreateDH)
+		gRoot.POST("/config/tlsauth", rts.AppCreateTlsAuth)
 	}
 
 	return r

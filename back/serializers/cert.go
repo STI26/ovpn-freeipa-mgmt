@@ -31,15 +31,9 @@ func CertListSerialazer(respObj *models.RespObjCertsRequest, keys *[]fs.DirEntry
 	}
 }
 
-func CertSerialazer(respObj *models.RespObjCertsRequest) string {
-
-	if len(respObj.Result) != 1 {
-		return ""
-	}
-
+func certSerialazer(cert string) string {
 	res := "-----BEGIN CERTIFICATE-----"
 
-	cert := respObj.Result[0].Certificate
 	for i := 0; i < len(cert); i++ {
 		if i%64 == 0 {
 			res += "\n"
@@ -49,6 +43,24 @@ func CertSerialazer(respObj *models.RespObjCertsRequest) string {
 	}
 
 	res += "\n-----END CERTIFICATE-----"
+
+	return res
+}
+
+func CertsSerialazer(respObj *models.RespObjCertsRequest) string {
+
+	if len(respObj.Result) != 1 {
+		return ""
+	}
+
+	res := certSerialazer(respObj.Result[0].Certificate)
+
+	return res
+}
+
+func CertSerialazer(respObj *models.RespObjCertRequest) string {
+
+	res := certSerialazer(respObj.Result.Certificate)
 
 	return res
 }
