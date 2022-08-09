@@ -1,7 +1,9 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
+import { useRouter } from 'vue-router';
 import { useStore } from 'vuex'
 
+const router = useRouter()
 const store = useStore()
 
 const config = ref(null)
@@ -9,9 +11,11 @@ const configError = ref('')
 
 const isInclude = (cfgItem, str) => {
   const lstr = str.toLocaleLowerCase()
-  return (cfgItem.name.toLocaleLowerCase().includes(lstr) ||
-          cfgItem.value.toLocaleLowerCase().includes(lstr) ||
-          cfgItem.message.toLocaleLowerCase().includes(lstr))
+  return (
+    cfgItem.name.toLocaleLowerCase().includes(lstr) ||
+    cfgItem.value.toLocaleLowerCase().includes(lstr) ||
+    cfgItem.message.toLocaleLowerCase().includes(lstr)
+  )
 }
 
 const filteredConfig = computed(() => {
@@ -20,20 +24,62 @@ const filteredConfig = computed(() => {
     : config.value.filter((item) => isInclude(item, store.getters.searchString))
 })
 
+const showUpdateBtn = (key) => {
+  switch (key) {
+    case 'ca':
+    case 'crl':
+    case 'cert':
+    case 'key':
+      return true
+    default:
+      return false
+  }
+}
+
+const update = (key) => {
+  let action = ''
+
+  switch (key) {
+    case 'ca':
+      action = 'updateCA'
+      break
+    case 'crl':
+      action = 'updateCrl'
+      break
+    case 'cert':
+    case 'key':
+      router.push('/server/cert')
+      return
+    default:
+      return
+  }
+
+  store
+    .dispatch(action)
+    .then(() => {
+      loadConfig()
+    })
+    .catch(e => {
+      store.commit('updateToast', { color: 'danger', text: e })
+      store.dispatch('showToast')
+    })
+}
+
 const cfgToArray = (obj) => {
   const list = []
 
   for (const [key, val] of Object.entries(obj.value)) {
     list.push({
-      name: key,
+      key: key,
+      name: obj.name[key],
       value: val,
       status: obj.status[key],
       message: obj.message[key]
     })
   }
-  
+
   return list
-} 
+}
 
 const loadConfig = () => {
   store
@@ -50,7 +96,7 @@ const loadConfig = () => {
 
 onMounted(() => {
   loadConfig()
-})
+});
 </script>
 
 <template>
@@ -63,19 +109,37 @@ onMounted(() => {
         </div>
       </div>
       <div v-else-if="configError">
-      {{ configError }}
-      <router-link class="btn btn-outline-primary float-end" to="/config/create">Create</router-link>
+        {{ configError }}
+        <router-link
+          class="btn btn-outline-primary float-end"
+          to="/config/create"
+          >Create</router-link
+        >
       </div>
       <ol v-else class="list-group list-group-numbered">
-        <li v-for="item of filteredConfig" :key="item.name"
+        <li
+          v-for="item of filteredConfig"
+          :key="item.name"
           class="list-group-item d-flex justify-content-between align-items-start"
         >
-          <div class="ms-2 me-auto">
+          <div class="ms-2 me-auto w-100">
             <div class="fw-bold">
-            <span v-if="item.status === 'true'" class="text-success">&#10004;</span>
-            <span v-else-if="item.status === 'false'" class="text-danger">&#10007;</span>
-            {{ item.name }}:</div>
-            {{ item.value }} <span v-if="item.message"> ({{ item.message }})</span>
+              <span v-if="item.status === 'true'" class="text-success"
+                >&#10003;</span
+              >
+              <span v-else-if="item.status === 'false'" class="text-danger"
+                >&#10007;</span
+              >
+              {{ item.name || item.key }}:
+              <span
+                v-if="showUpdateBtn(item.key)"
+                class="badge bg-primary btn float-end"
+                v-on:click="update(item.key)"
+                >Update</span
+              >
+            </div>
+            {{ item.value }}
+            <span v-if="item.message"> ({{ item.message }})</span>
           </div>
         </li>
       </ol>
