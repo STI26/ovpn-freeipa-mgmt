@@ -39,17 +39,29 @@ const loadOptions = (action) => {
 }
 
 const onSubmit = () => {
+  let action = ''
+  let next = ''
+
+  if (router.currentRoute.value.name === 'server-cert') {
+    action = 'updateCert'
+    next = '/config'
+  } else {
+    action = 'createClient'
+    next = '/'
+  }
+
   spinner.value = true
   store
-    .dispatch('createClient', selectedTarget.value)
+    .dispatch(action, selectedTarget.value)
     .then(() => {
       spinner.value = false
 
       store.commit('updateToast', {color: 'success', text: 'Successful Create'})
       store.dispatch('showToast')
-      router.push('/')
+      router.push(next)
     })
     .catch(e => {
+      spinner.value = false
       store.commit('updateToast', {color: 'danger', text: e})
       store.dispatch('showToast')
     })

@@ -37,6 +37,12 @@ const router = createRouter({
       component: ServerConfigCreate
     },
     {
+      path: '/server/cert',
+      name: 'server-cert',
+      meta: { onlyAuth: true, navbar: true },
+      component: ClientConfigCreate
+    },
+    {
       path: '/connections',
       name: 'connections',
       meta: { onlyAuth: true, navbar: true },
