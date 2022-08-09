@@ -128,9 +128,10 @@ func (r *Routers) AppCreateServerCert(c *gin.Context) {
 	// Convert key from der to pem
 	var PrivateKeyRow bytes.Buffer
 
+	b, _ := x509.MarshalPKCS8PrivateKey(key)
 	var privateKey = &pem.Block{
 		Type:  "PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(key),
+		Bytes: b,
 	}
 
 	err = pem.Encode(&PrivateKeyRow, privateKey)
