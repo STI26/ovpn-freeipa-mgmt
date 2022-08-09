@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"html/template"
 	"log"
 	"net"
@@ -129,6 +130,7 @@ func (ovpn *OpenVPN) getIPAServer() string {
 }
 
 func (ovpn *OpenVPN) GetFreeIP() string {
+	// TODO: ...
 	return ""
 }
 
@@ -337,22 +339,32 @@ func (ovpn *OpenVPN) GetServerConfig() *map[string]OvpnOptions {
 
 	// Check cert
 	name.Cert = "Server Certificate"
-	if _, err := os.Stat(ovpn.Config.Cert); err != nil {
+	if b, err := os.ReadFile(ovpn.Config.Cert); err != nil {
 		status.Cert = "false"
 		message.Cert = "file not found"
 	} else {
 		status.Cert = "true"
-		message.Cert = ""
+		message.Cert = "Issuer: "
+
+		der, _ := pem.Decode(b)
+		if cert, err := x509.ParseCertificate(der.Bytes); err == nil {
+			message.Cert += cert.Issuer.String()
+		}
 	}
 
 	// Check key
 	name.Key = "Server Private Key"
-	if _, err := os.Stat(ovpn.Config.Key); err != nil {
+	if b, err := os.ReadFile(ovpn.Config.Key); err != nil {
 		status.Key = "false"
 		message.Key = "file not found"
 	} else {
 		status.Key = "true"
-		message.Key = ""
+		message.Key = "Size: "
+
+		der, _ := pem.Decode(b)
+		if key, err := x509.ParsePKCS1PrivateKey(der.Bytes); err == nil {
+			message.Key += fmt.Sprint(key.Size())
+		}
 	}
 
 	// Check ccd
