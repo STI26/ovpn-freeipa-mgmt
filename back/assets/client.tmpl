@@ -1,7 +1,7 @@
 #Client config
 client
 resolv-retry infinite
-remote {{ .options.Local }}
+remote {{ .serverConfig.Local }}
 
 #Connect config
 port {{ .serverConfig.Port }}
