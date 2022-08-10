@@ -43,22 +43,22 @@ const update = () => {
 
 onMounted(() => {
   loadConnections()
-})
+});
 </script>
 
 <template>
-  <div class="card mt-3">
+  <div v-if="!version" class="d-flex justify-content-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  <div v-else class="card mt-3">
     <div class="card-header">
       Active Clients <span class="fw-lighter">({{ version }})</span>
       <span class="badge bg-primary btn float-end" v-on:click="update">Update</span>
     </div>
     <div class="card-body">
-      <div v-if="!connections" class="d-flex justify-content-center">
-        <div class="spinner-border" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
-      <table v-else class="table table-hover">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th scope="col">#</th>
