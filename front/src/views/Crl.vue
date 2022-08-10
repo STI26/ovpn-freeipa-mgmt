@@ -1,6 +1,5 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import { useRouter } from 'vue-router';
 import { useStore } from 'vuex'
 
 const store = useStore()
@@ -33,6 +32,10 @@ const loadCrl = () => {
     })
 }
 
+const update = () => {
+  loadCrl()
+}
+
 onMounted(() => {
   loadCrl()
 });
@@ -47,6 +50,7 @@ onMounted(() => {
   <div v-else class="card mt-3">
     <div class="card-header">
       <span class="lh-lg">Certificate Revocation List</span>
+      <span class="badge bg-primary btn float-end" v-on:click="update">Update</span>
       <div class="fs-09"><span class="fw-light">Issuer:</span> {{ crl.issuer }}</div>
       <div class="fs-09"><span class="fw-light">This Time:</span> {{ crl.this_time }}</div>
       <div class="fs-09"><span class="fw-light">Next Time:</span> {{ crl.next_time }}</div>
