@@ -5,6 +5,7 @@ import ServerConfigCreate from '../views/ServerConfigCreate.vue'
 import ClientConfigCreate from '../views/ClientConfigCreate.vue'
 import Connections from '../views/Connections.vue'
 import About from '../views/About.vue'
+import Crl from '../views/Crl.vue'
 import Login from '../views/Login.vue'
 import NotFound from '../views/404.vue'
 import store from '../store'
@@ -53,6 +54,12 @@ const router = createRouter({
       name: 'about',
       meta: { onlyAuth: true, navbar: true },
       component: About
+    },
+    {
+      path: '/crl',
+      name: 'crl',
+      meta: { onlyAuth: true, navbar: true },
+      component: Crl
     },
     {
       path: '/login',

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sti26/ovpn_freeipa_mgmt/libs"
@@ -76,7 +77,54 @@ func (r *Routers) AppRevokeCert(c *gin.Context) {
 		return
 	}
 
+	crlInfo, err := r.Ovpn.GetCrlInfo()
+	if err != nil {
+		log.Println("[GetCrlInfo] [Warn] ", err)
+		c.JSON(code, map[string]string{"error": err.Error()})
+		return
+	}
+
+	delay := time.Until(crlInfo.NextUpdate)
+	log.Printf(
+		"[UpdateCrl] [Info] CRL ThisUpdate: %s; NextUpdate: %s.\n",
+		crlInfo.ThisUpdate.String(),
+		crlInfo.NextUpdate.String(),
+	)
+
+	go func(d *time.Duration, ovpn *libs.OpenVPN) {
+		log.Printf("[UpdateCrl] [Info] CRL will be updated after %s.\n", delay.String())
+
+		time.Sleep(*d)
+		ovpn.UpdateCrl()
+
+		log.Println("[UpdateCrl] [Info] CRL updated successfully.")
+
+	}(&delay, r.Ovpn)
+
 	c.JSON(code, map[string]string{"error": ""})
+}
+
+func (r *Routers) AppGetCrl(c *gin.Context) {
+
+	var h models.Headers
+	c.BindHeader(&h)
+
+	// Check Authentication
+	_, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping", []any{}, &gin.H{})
+	if err != nil {
+		log.Println("[JSON_RPC] [Warn] ", err, "|", code)
+		c.JSON(code, map[string]string{"error": err.Error()})
+		return
+	}
+
+	crlInfo, err := r.Ovpn.GetCrlInfo()
+	if err != nil {
+		log.Println("[GetCrlInfo] [Warn] ", err)
+		c.JSON(code, map[string]string{"error": err.Error()})
+		return
+	}
+
+	c.JSON(code, *serializers.CertRevokedListSerialazer(crlInfo))
 }
 
 func (r *Routers) getKeys() *[]fs.DirEntry {

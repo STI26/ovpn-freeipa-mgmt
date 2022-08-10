@@ -3,6 +3,7 @@ package libs
 import (
 	"bytes"
 	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -281,6 +282,20 @@ func (ovpn *OpenVPN) GetStatusInfo() (string, error) {
 	}
 
 	return string(b), nil
+}
+
+func (ovpn *OpenVPN) GetCrlInfo() (*pkix.TBSCertificateList, error) {
+	b, err := os.ReadFile(ovpn.Config.Crl)
+	if err != nil {
+		return nil, err
+	}
+
+	crl, err := x509.ParseDERCRL(b)
+	if err != nil {
+		return nil, err
+	}
+
+	return &crl.TBSCertList, nil
 }
 
 func (ovpn *OpenVPN) GetServerConfig() *map[string]OvpnOptions {

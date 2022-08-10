@@ -5,6 +5,7 @@ import client from '@/store/client'
 import config from '@/store/config'
 import connections from '@/store/connections'
 import about from '@/store/about'
+import crl from '@/store/crl'
 
 
 export default createStore({
@@ -155,6 +156,7 @@ export default createStore({
     client,
     config,
     connections,
-    about
+    about,
+    crl
   }
 })
