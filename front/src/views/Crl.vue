@@ -33,7 +33,15 @@ const loadCrl = () => {
 }
 
 const update = () => {
-  loadCrl()
+  store
+    .dispatch('updateCrl')
+    .then(() => {
+      loadCrl()
+    })
+    .catch(e => {
+      store.commit('updateToast', { color: 'danger', text: e })
+      store.dispatch('showToast')
+    })
 }
 
 onMounted(() => {
