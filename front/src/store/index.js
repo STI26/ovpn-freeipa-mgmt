@@ -93,10 +93,6 @@ export default createStore({
           throw error
         }
       }
-
-      if (response.type === 'basic') {
-        throw `${url}: 400 (Bad Request)`
-      }
       
       return response.json()
     },
