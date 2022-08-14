@@ -25,6 +25,7 @@ const loadCrl = () => {
     .dispatch('getCrl')
     .then((data) => {
       crl.value = data.crl
+      crl.value.revoked_certificates.sort((a, b) => (b.serial_number - a.serial_number))
     })
     .catch((e) => {
       store.commit('updateToast', { color: 'danger', text: e })
