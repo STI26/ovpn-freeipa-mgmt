@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -118,4 +119,11 @@ func GetPrincipal(subject, server string) string {
 	}
 
 	return principal
+}
+
+func createFile(p string) (*os.File, error) {
+	if err := os.MkdirAll(filepath.Dir(p), 0644); err != nil {
+		return nil, err
+	}
+	return os.Create(p)
 }
