@@ -23,6 +23,9 @@ type Cert struct {
 	Subject          string `json:"subject"`
 	ValidNotAfter    string `json:"valid_not_after"`
 	ValidNotBefore   string `json:"valid_not_before"`
-	Certificate      string `json:"certificate,omitempty`
-	RevocationReason int    `json:"revocation_reason,omitempty`
+	Certificate      string `json:"certificate,omitempty"`
+	RevocationReason int    `json:"revocation_reason,omitempty"`
+	CertificateChain []struct {
+		Base64 string `json:"__base64__"`
+	} `json:"certificate_chain,omitempty"`
 }
