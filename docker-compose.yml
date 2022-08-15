@@ -6,6 +6,7 @@ services:
     user: root
     restart: always
     container_name: ovpn-mgmt-back
+    hostname: backend  # requests from the frontend are proxied to the hostname
     command: >
         --addr=0.0.0.0:8000
         --ipa-server=https://ipa.local.net
