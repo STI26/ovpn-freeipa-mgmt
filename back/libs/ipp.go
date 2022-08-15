@@ -3,6 +3,7 @@ package libs
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -57,9 +58,11 @@ func (ipp IfconfigPoolPersist) GetIP(name string) (string, error) {
 }
 
 func (ipp IfconfigPoolPersist) AddIP(name string) (string, error) {
+	createFile(ipp.Path)
+
 	rows, err := os.ReadFile(ipp.Path)
 	if err != nil {
-		return "", err
+		log.Println("[ReadFile] [Warn] ", err)
 	}
 
 	ip := ipp.getFreeIP(&rows)
