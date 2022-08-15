@@ -53,7 +53,10 @@ func CertsSerialazer(respObj *models.RespObjCertsRequest) string {
 		return ""
 	}
 
-	res := certSerialazer(respObj.Result[0].Certificate)
+	res := ""
+	for _, i := range respObj.Result[0].CertificateChain {
+		res += "\n" + certSerialazer(i.Base64)
+	}
 
 	return res
 }
