@@ -1,5 +1,5 @@
-VERSION_BACK  = v1.0.1
-VERSION_FRONT = v1.0.1
+VERSION_BACK  = v1.1.0
+VERSION_FRONT = v1.1.0
 API_URL       = /api
 BUILD_DATE    = $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
