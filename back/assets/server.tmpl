@@ -6,7 +6,7 @@ management localhost 7505
 crl-verify {{ if .options.Crl }}{{ .options.Crl }}{{ else }}/etc/openvpn/crl.bin{{ end }}
 
 # Push routes to the client to allow it
-push "route 10.10.2.0 255.255.255.0"
+push "route 10.8.0.0 255.255.255.0"
 
 # Connect config
 port {{ if .options.Port }}{{ .options.Port }}{{ else }}1194{{ end }}

@@ -22,10 +22,10 @@ keepalive 60 120
 #Encryption config
 {{ if .serverConfig.DataCiphers }}
 data-ciphers {{ .serverConfig.DataCiphers }}
-{{ end }}
+{{- end }}
 {{ if .serverConfig.Auth }}
 auth {{ .serverConfig.Auth }}
-{{ end }}
+{{- end }}
 
 #Log config
 log-append /var/log/openvpn/openvpn-append.log
@@ -35,20 +35,20 @@ verb 3
 <cert>
 {{ .cert }}
 </cert>
-{{ end }}
+{{- end }}
 {{ if .key }}
 <key>
 {{ .key }}
 </key>
-{{ end }}
+{{- end }}
 {{ if .ca }}
 <ca>
 {{ .ca }}
 </ca>
-{{ end }}
+{{- end }}
 {{ if .tlsAuth }}
 key-direction 1
 <tls-auth>
 {{ .tlsAuth }}
 </tls-auth>
-{{ end }}
+{{- end }}
