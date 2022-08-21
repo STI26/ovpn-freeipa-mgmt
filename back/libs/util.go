@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"io/fs"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -126,4 +127,14 @@ func createFile(p string) (*os.File, error) {
 		return nil, err
 	}
 	return os.Create(p)
+}
+
+func nextIP(ip net.IP) {
+	for i := 3; i >= 0; i-- {
+		if b := ip[i] + 1; b != 0 {
+			ip[i] = b
+			return
+		}
+		ip[i] = 0
+	}
 }

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -14,27 +14,59 @@ type IfconfigPoolPersist struct {
 	Network Network
 }
 
-func (ipp IfconfigPoolPersist) getFreeIP(b *[]byte) string {
-	ips := []int{}
+func (ipp IfconfigPoolPersist) getAllIP() []string {
+	ips := []string{}
 
-	for _, i := range strings.Split(string(*b), "\n") {
-		row := strings.Split(string(i), ".")
-
-		num, err := strconv.Atoi(row[len(row)-1])
-		if err == nil {
-			ips = append(ips, num)
-		}
+	b, err := os.ReadFile(ipp.Path)
+	if err != nil {
+		return ips
 	}
 
-	for ip := 2; ip < 255; ip++ {
-		if contains(&ips, ip) {
+	rows := strings.Split(string(b), "\n")
+	for i := 0; i < len(rows); i++ {
+		if strings.HasPrefix(rows[i], "#") {
 			continue
 		}
 
-		s := strings.Split(ipp.Network.IP, ".")
-		s[3] = fmt.Sprint(ip)
+		row := strings.Split(rows[i], ",")
 
-		return strings.Join(s, ".")
+		if len(row) > 0 {
+			ips = append(ips, strings.TrimSpace(row[1]))
+		}
+	}
+
+	return ips
+}
+
+func (ipp IfconfigPoolPersist) isFreeIP(ip net.IP, pool []string) bool {
+	for _, i := range pool {
+		if ip.String() == i {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (ipp IfconfigPoolPersist) getFreeIP() string {
+	_mask := net.ParseIP(ipp.Network.Mask)
+	ip := net.ParseIP(ipp.Network.IP)
+
+	mask := net.IPMask(_mask)
+	// Get first ip
+	ip = ip.Mask(mask)
+
+	mSize, size32 := mask.Size()
+	// Get count ip's
+	ips := 1 << (size32 - mSize)
+
+	pool := ipp.getAllIP()
+
+	for i := 0; i < ips; i++ {
+		if ipp.isFreeIP(ip, pool) {
+			return ip.String()
+		}
+		nextIP(ip)
 	}
 
 	return ""
@@ -65,7 +97,7 @@ func (ipp IfconfigPoolPersist) AddIP(name string) (string, error) {
 		log.Println("[ReadFile] [Warn] ", err)
 	}
 
-	ip := ipp.getFreeIP(&rows)
+	ip := ipp.getFreeIP()
 	if ip == "" {
 		return "", errors.New("unable to allocate new ip")
 	}
