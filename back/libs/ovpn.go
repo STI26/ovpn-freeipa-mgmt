@@ -14,12 +14,14 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/sti26/ovpn_freeipa_mgmt/models"
 )
 
 type OpenVPN struct {
-	Server   Network     `json:"server"`
-	Config   OvpnOptions `json:"config"`
-	IPAHosts []string    `json:"ipa_hosts,omitempty"`
+	Server   Network             `json:"server"`
+	Optons   []models.OvpnOption `json:"options"`
+	IPAHosts []string            `json:"ipa_hosts,omitempty"`
 }
 
 type Network struct {
@@ -27,36 +29,10 @@ type Network struct {
 	Mask string `json:"mask"`
 }
 
-type OvpnOptions struct {
-	// options with path
-	Crl string `json:"crl"`
-
-	CA      string `json:"ca"`
-	TlsAuth string `json:"tls_auth"`
-	DH      string `json:"dh"`
-
-	Cert string `json:"cert"`
-	Key  string `json:"key"`
-
-	Ccd string `json:"ccd"`
-	Ipp string `json:"ipp"`
-
-	Status string `json:"status"`
-
-	// options with key
-	Local          string `json:"local"`
-	Port           string `json:"port"`
-	Proto          string `json:"proto"`
-	Dev            string `json:"dev"`
-	CompLzo        string `json:"comp_lzo"`
-	TunMtu         string `json:"tun_mtu"`
-	DataCiphers    string `json:"data_cipthers"`
-	Auth           string `json:"auth"`
-	Topology       string `json:"topology"`
-	ClientToClient bool   `json:"client_to_client"`
-}
-
 func (ovpn *OpenVPN) Init(pathToConf string) error {
+	// Clear options
+	ovpn.Optons = []models.OvpnOption{}
+
 	b, err := os.ReadFile(pathToConf)
 	if err != nil {
 		log.Println(err)
@@ -64,52 +40,23 @@ func (ovpn *OpenVPN) Init(pathToConf string) error {
 	}
 
 	for _, i := range strings.Split(string(b), "\n") {
-		row := strings.Split(i, " ")
+		row := strings.SplitAfterN(i, " ", 2)
 
-		switch row[0] {
-		case "server":
-			ovpn.Server.IP = strings.TrimSpace(row[1])
-			ovpn.Server.Mask = strings.TrimSpace(row[2])
+		key := strings.TrimSpace(row[0])
+		option, exist := models.OvpnAvailableOptions[key]
+		if exist {
+			if len(row) > 1 {
+				option.Value = strings.TrimSpace(row[1])
+			} else {
+				option.Value = ""
+			}
+			ovpn.Optons = append(ovpn.Optons, option)
 
-		case "ca":
-			ovpn.Config.CA = strings.TrimSpace(row[1])
-		case "tls-auth":
-			ovpn.Config.TlsAuth = strings.TrimSpace(row[1])
-		case "dh":
-			ovpn.Config.DH = strings.TrimSpace(row[1])
-		case "cert":
-			ovpn.Config.Cert = strings.TrimSpace(row[1])
-		case "key":
-			ovpn.Config.Key = strings.TrimSpace(row[1])
-		case "crl-verify":
-			ovpn.Config.Crl = strings.TrimSpace(row[1])
-		case "client-config-dir":
-			ovpn.Config.Ccd = strings.TrimSpace(row[1])
-		case "ifconfig-pool-persist":
-			ovpn.Config.Ipp = strings.TrimSpace(row[1])
-		case "status":
-			ovpn.Config.Status = strings.TrimSpace(row[1])
-
-		case "local":
-			ovpn.Config.Local = strings.TrimSpace(row[1])
-		case "port":
-			ovpn.Config.Port = strings.TrimSpace(row[1])
-		case "proto":
-			ovpn.Config.Proto = strings.TrimSpace(row[1])
-		case "dev":
-			ovpn.Config.Dev = strings.TrimSpace(row[1])
-		case "comp-lzo":
-			ovpn.Config.CompLzo = strings.TrimSpace(row[1])
-		case "tun-mtu":
-			ovpn.Config.TunMtu = strings.TrimSpace(row[1])
-		case "data-ciphers":
-			ovpn.Config.DataCiphers = strings.TrimSpace(row[1])
-		case "auth":
-			ovpn.Config.Auth = strings.TrimSpace(row[1])
-		case "topology":
-			ovpn.Config.Topology = strings.TrimSpace(row[1])
-		case "client-to-client":
-			ovpn.Config.ClientToClient = true
+			if option.Key == "server" {
+				v := strings.Split(row[1], " ")
+				ovpn.Server.IP = strings.TrimSpace(v[0])
+				ovpn.Server.Mask = strings.TrimSpace(v[1])
+			}
 		}
 	}
 
@@ -129,8 +76,35 @@ func (ovpn *OpenVPN) getIPAServer() string {
 	return ovpn.IPAHosts[0]
 }
 
+func (ovpn *OpenVPN) GetOptionsByKey(key string) []*models.OvpnOption {
+	opts := []*models.OvpnOption{}
+
+	for _, opt := range ovpn.Optons {
+		if opt.Key == key {
+			opts = append(opts, &opt)
+		}
+	}
+
+	return opts
+}
+
+func (ovpn *OpenVPN) GetOptionByKey(key string) (*models.OvpnOption, int) {
+	for idx, opt := range ovpn.Optons {
+		if opt.Key == key {
+			return &opt, idx
+		}
+	}
+
+	return nil, 0
+}
+
 func (ovpn *OpenVPN) GetClientIP(client string) (string, error) {
-	b, err := os.ReadFile(ovpn.Config.Ipp)
+	ipp, _ := ovpn.GetOptionByKey("ifconfig-pool-persist")
+	if ipp == nil {
+		return "", errors.New("ifconfig-pool-persist not found")
+	}
+
+	b, err := os.ReadFile(ipp.Value)
 	if err != nil {
 		return "", err
 	}
@@ -151,7 +125,12 @@ func (ovpn *OpenVPN) UpdateClientIP(client, ip string) error {
 	var rows []string
 	changed := false
 
-	b, err := os.ReadFile(ovpn.Config.Ipp)
+	ipp, _ := ovpn.GetOptionByKey("ifconfig-pool-persist")
+	if ipp == nil {
+		return errors.New("ifconfig-pool-persist not found")
+	}
+
+	b, err := os.ReadFile(ipp.Value)
 	if err == nil {
 		rows = strings.Split(strings.TrimSpace(string(b)), "\n")
 
@@ -170,7 +149,7 @@ func (ovpn *OpenVPN) UpdateClientIP(client, ip string) error {
 	}
 
 	data := strings.Join(rows, "\n")
-	err = os.WriteFile(ovpn.Config.Ipp, []byte(data), 0644)
+	err = os.WriteFile(ipp.Value, []byte(data), 0644)
 	if err != nil {
 		return err
 	}
@@ -179,7 +158,12 @@ func (ovpn *OpenVPN) UpdateClientIP(client, ip string) error {
 }
 
 func (ovpn *OpenVPN) GetClientConfig(client string) (string, error) {
-	path := filepath.Join(ovpn.Config.Ccd, client)
+	ccd, _ := ovpn.GetOptionByKey("client-config-dir")
+	if ccd == nil {
+		return "", errors.New("client-config-dir not found")
+	}
+
+	path := filepath.Join(ccd.Value, client)
 
 	b, err := os.ReadFile(path)
 	if err != nil {
@@ -200,7 +184,7 @@ func (ovpn *OpenVPN) CreateServerConfig(path string) error {
 
 	err = tmpl.Execute(data, map[string]interface{}{
 		"network": ovpn.Server,
-		"options": ovpn.Config,
+		"options": ovpn.Optons,
 	})
 	if err != nil {
 		log.Println("[tmpl.Execute] [Error] ", err)
@@ -220,7 +204,12 @@ func (ovpn *OpenVPN) CreateServerConfig(path string) error {
 }
 
 func (ovpn *OpenVPN) UpdateClientConfig(client, data string) error {
-	path := filepath.Join(ovpn.Config.Ccd, client)
+	ccd, _ := ovpn.GetOptionByKey("client-config-dir")
+	if ccd == nil {
+		return errors.New("client-config-dir not found")
+	}
+
+	path := filepath.Join(ccd.Value, client)
 
 	err := os.WriteFile(path, []byte(data), 0644)
 	if err != nil {
@@ -237,12 +226,16 @@ func (ovpn *OpenVPN) UpdateCA() error {
 		Path:   "/ipa/config/ca.crt",
 	}
 
-	_, err := DownloadFile(u.String(), ovpn.Config.CA)
+	ca, _ := ovpn.GetOptionByKey("ca")
+	BackupFile(ca.Value)
+
+	_, err := DownloadFile(u.String(), ca.Value)
 	return err
 }
 
 func (ovpn *OpenVPN) GetCA() string {
-	b, err := os.ReadFile(ovpn.Config.CA)
+	ca, _ := ovpn.GetOptionByKey("ca")
+	b, err := os.ReadFile(ca.Value)
 	if err != nil {
 		log.Print(err)
 		return ""
@@ -258,13 +251,17 @@ func (ovpn *OpenVPN) UpdateCrl() error {
 		Path:   "/ipa/crl/MasterCRL.bin",
 	}
 
-	_, err := DownloadFile(u.String(), ovpn.Config.Crl)
+	crl, _ := ovpn.GetOptionByKey("crl-verify")
+	BackupFile(crl.Value)
+
+	_, err := DownloadFile(u.String(), crl.Value)
 
 	return err
 }
 
 func (ovpn *OpenVPN) GetStatusInfo() (string, error) {
-	b, err := os.ReadFile(ovpn.Config.Status)
+	status, _ := ovpn.GetOptionByKey("status")
+	b, err := os.ReadFile(status.Value)
 	if err != nil {
 		return "", err
 	}
@@ -273,7 +270,8 @@ func (ovpn *OpenVPN) GetStatusInfo() (string, error) {
 }
 
 func (ovpn *OpenVPN) GetCrlInfo() (*pkix.TBSCertificateList, error) {
-	b, err := os.ReadFile(ovpn.Config.Crl)
+	_crl, _ := ovpn.GetOptionByKey("crl-verify")
+	b, err := os.ReadFile(_crl.Value)
 	if err != nil {
 		return nil, err
 	}
@@ -286,121 +284,124 @@ func (ovpn *OpenVPN) GetCrlInfo() (*pkix.TBSCertificateList, error) {
 	return &crl.TBSCertList, nil
 }
 
-func (ovpn *OpenVPN) GetServerConfig() *map[string]OvpnOptions {
-	var name OvpnOptions
-	var status OvpnOptions
-	var message OvpnOptions
+func (ovpn *OpenVPN) GetServerConfig() []models.OvpnOption {
 
 	// Check CRL
-	name.Crl = "Certificate Revocation List"
-	if b, err := os.ReadFile(ovpn.Config.Crl); err != nil {
-		status.Crl = "false"
-		message.Crl = "file not found"
-	} else {
-		status.Crl = "true"
-		message.Crl = "Issuer: "
+	crl, idx := ovpn.GetOptionByKey("crl-verify")
+	if crl != nil {
+		if b, err := os.ReadFile(crl.Value); err != nil {
+			ovpn.Optons[idx].Status = false
+			ovpn.Optons[idx].Note = "file not found"
+		} else {
+			ovpn.Optons[idx].Status = true
+			ovpn.Optons[idx].Note = "Issuer: "
 
-		if crl, err := x509.ParseDERCRL(b); err == nil {
-			message.Crl += crl.TBSCertList.Issuer.String()
+			if _crl, err := x509.ParseDERCRL(b); err == nil {
+				ovpn.Optons[idx].Note += _crl.TBSCertList.Issuer.String()
+			}
 		}
 	}
 
 	// Check CA
-	name.CA = "Certificate Authority"
-	if b, err := os.ReadFile(ovpn.Config.CA); err != nil {
-		status.CA = "false"
-		message.CA = "file not found"
-	} else {
-		status.CA = "true"
-		message.CA = "Issuer: "
+	ca, idx := ovpn.GetOptionByKey("ca")
+	if ca != nil {
+		if b, err := os.ReadFile(ca.Value); err != nil {
+			ovpn.Optons[idx].Status = false
+			ovpn.Optons[idx].Note = "file not found"
+		} else {
+			ovpn.Optons[idx].Status = true
+			ovpn.Optons[idx].Note = "Issuer: "
 
-		der, _ := pem.Decode(b)
-		if ca, err := x509.ParseCertificate(der.Bytes); err == nil {
-			message.CA += ca.Issuer.String()
+			der, _ := pem.Decode(b)
+			if _ca, err := x509.ParseCertificate(der.Bytes); err == nil {
+				ovpn.Optons[idx].Note += _ca.Issuer.String()
+			}
 		}
 	}
 
 	// Check tls-auth
-	name.TlsAuth = "TLS Auth HMAC signature"
-	if _, err := os.Stat(ovpn.Config.TlsAuth); err != nil {
-		status.TlsAuth = "false"
-		message.TlsAuth = "file not found"
-	} else {
-		status.TlsAuth = "true"
-		message.TlsAuth = ""
+	tlsAuth, idx := ovpn.GetOptionByKey("tls-auth")
+	if tlsAuth != nil {
+		_tlsAuth := strings.Split(tlsAuth.Value, " ")
+		if _, err := os.Stat(_tlsAuth[0]); err != nil {
+			ovpn.Optons[idx].Status = false
+			ovpn.Optons[idx].Note = "file not found"
+		} else {
+			ovpn.Optons[idx].Status = true
+		}
 	}
 
 	// Check dh
-	name.DH = "Diffie-Hellman"
-	if _, err := os.Stat(ovpn.Config.DH); err != nil {
-		status.DH = "false"
-		message.DH = "file not found"
-	} else {
-		status.DH = "true"
-		message.DH = ""
+	dh, idx := ovpn.GetOptionByKey("dh")
+	if dh != nil {
+		if _, err := os.Stat(dh.Value); err != nil {
+			ovpn.Optons[idx].Status = false
+			ovpn.Optons[idx].Note = "file not found"
+		} else {
+			ovpn.Optons[idx].Status = true
+		}
 	}
 
 	// Check cert
-	name.Cert = "Server Certificate"
-	if b, err := os.ReadFile(ovpn.Config.Cert); err != nil {
-		status.Cert = "false"
-		message.Cert = "file not found"
-	} else {
-		status.Cert = "true"
-		message.Cert = "Issuer: "
+	cert, idx := ovpn.GetOptionByKey("cert")
+	if cert != nil {
+		if b, err := os.ReadFile(cert.Value); err != nil {
+			ovpn.Optons[idx].Status = false
+			ovpn.Optons[idx].Note = "file not found"
+		} else {
+			ovpn.Optons[idx].Status = true
+			ovpn.Optons[idx].Note = "Issuer: "
 
-		der, _ := pem.Decode(b)
-		if cert, err := x509.ParseCertificate(der.Bytes); err == nil {
-			message.Cert += cert.Issuer.String()
+			der, _ := pem.Decode(b)
+			if _cert, err := x509.ParseCertificate(der.Bytes); err == nil {
+				ovpn.Optons[idx].Note += _cert.Issuer.String()
+			}
 		}
 	}
 
 	// Check key
-	name.Key = "Server Private Key"
-	if _, err := os.ReadFile(ovpn.Config.Key); err != nil {
-		status.Key = "false"
-		message.Key = "file not found"
-	} else {
-		status.Key = "true"
-		message.Key = ""
+	key, idx := ovpn.GetOptionByKey("key")
+	if key != nil {
+		if _, err := os.Stat(key.Value); err != nil {
+			ovpn.Optons[idx].Status = false
+			ovpn.Optons[idx].Note = "file not found"
+		} else {
+			ovpn.Optons[idx].Status = true
+		}
 	}
 
 	// Check ccd
-	name.Ccd = "Client Config Dir"
-	if _, err := os.Stat(ovpn.Config.Ccd); err != nil {
-		status.Ccd = "false"
-		message.Ccd = "folder not found"
-	} else {
-		status.Ccd = "true"
-		message.Ccd = ""
+	ccd, idx := ovpn.GetOptionByKey("client-config-dir")
+	if ccd != nil {
+		if _, err := os.Stat(ccd.Value); err != nil {
+			ovpn.Optons[idx].Status = false
+			ovpn.Optons[idx].Note = "folder not found"
+		} else {
+			ovpn.Optons[idx].Status = true
+		}
 	}
 
 	// Check ipp
-	name.Ipp = "Ifconfig Pool Persist"
-	if _, err := os.Stat(ovpn.Config.Ipp); err != nil {
-		status.Ipp = "false"
-		message.Ipp = "file not found"
-	} else {
-		status.Ipp = "true"
-		message.Ipp = ""
+	ipp, idx := ovpn.GetOptionByKey("ifconfig-pool-persist")
+	if ipp != nil {
+		if _, err := os.Stat(ipp.Value); err != nil {
+			ovpn.Optons[idx].Status = false
+			ovpn.Optons[idx].Note = "file not found"
+		} else {
+			ovpn.Optons[idx].Status = true
+		}
 	}
 
 	// Check status
-	name.Status = "Status File"
-	if _, err := os.Stat(ovpn.Config.Status); err != nil {
-		status.Status = "false"
-		message.Status = "file not found"
-	} else {
-		status.Status = "true"
-		message.Status = ""
+	status, idx := ovpn.GetOptionByKey("ifconfig-pool-persist")
+	if status != nil {
+		if _, err := os.Stat(status.Value); err != nil {
+			ovpn.Optons[idx].Status = false
+			ovpn.Optons[idx].Note = "file not found"
+		} else {
+			ovpn.Optons[idx].Status = true
+		}
 	}
 
-	res := map[string]OvpnOptions{
-		"name":    name,
-		"value":   ovpn.Config,
-		"status":  status,
-		"message": message,
-	}
-
-	return &res
+	return ovpn.Optons
 }

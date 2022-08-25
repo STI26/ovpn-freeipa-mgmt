@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"text/template"
 
 	"github.com/gin-gonic/gin"
@@ -33,15 +34,17 @@ func (r *Routers) AppGetConfig(c *gin.Context) {
 	}
 
 	// Get routes
-	path := filepath.Join(r.Ovpn.Config.Ccd, userID)
+	_ccd, _ := r.Ovpn.GetOptionByKey("client-config-dir")
+	path := filepath.Join(_ccd.Value, userID)
 	routes, err := os.ReadFile(path)
 	if err != nil {
 		log.Println("[ReadFile] [Warn] ", err)
 	}
 
 	// Get IP
+	_ipp, _ := r.Ovpn.GetOptionByKey("ifconfig-pool-persist")
 	ipp := libs.IfconfigPoolPersist{
-		Path:    r.Ovpn.Config.Ipp,
+		Path:    _ipp.Value,
 		Network: r.Ovpn.Server,
 	}
 	ip, err := ipp.GetIP(userID)
@@ -105,15 +108,21 @@ func (r *Routers) AppDownloadConfig(c *gin.Context) {
 	}
 
 	// Get user tls-auth
-	tlsAuth, err := os.ReadFile(r.Ovpn.Config.TlsAuth)
-	if err != nil {
-		log.Println("[readTlsAuth] [Warn] ", err)
-		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
-		return
+	_tlsAuth, _ := r.Ovpn.GetOptionByKey("tls-auth")
+	var tlsAuth []byte
+	if _tlsAuth != nil {
+		pathToTlsAuth := strings.Split(_tlsAuth.Value, " ")[0]
+		tlsAuth, err = os.ReadFile(pathToTlsAuth)
+		if err != nil {
+			log.Println("[readTlsAuth] [Warn] ", err)
+			c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+			return
+		}
 	}
 
 	// Get user ca
-	ca, err := os.ReadFile(r.Ovpn.Config.CA)
+	_ca, _ := r.Ovpn.GetOptionByKey("ca")
+	ca, err := os.ReadFile(_ca.Value)
 	if err != nil {
 		log.Println("[readCA] [Warn] ", err)
 		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
@@ -130,7 +139,7 @@ func (r *Routers) AppDownloadConfig(c *gin.Context) {
 	}
 
 	err = tmpl.Execute(config, map[string]interface{}{
-		"serverConfig": r.Ovpn.Config,
+		"serverConfig": r.Ovpn.Optons,
 		"ca":           string(ca),
 		"tlsAuth":      string(tlsAuth),
 		"cert":         cert,
@@ -218,8 +227,9 @@ func (r *Routers) AppCreateConfig(c *gin.Context) {
 	}
 
 	// Add IP
+	_ipp, _ := r.Ovpn.GetOptionByKey("ifconfig-pool-persist")
 	ipp := libs.IfconfigPoolPersist{
-		Path:    r.Ovpn.Config.Ipp,
+		Path:    _ipp.Value,
 		Network: r.Ovpn.Server,
 	}
 	_, err = ipp.AddIP(userID)
@@ -230,8 +240,9 @@ func (r *Routers) AppCreateConfig(c *gin.Context) {
 	}
 
 	// Add Default route
-	os.MkdirAll(r.Ovpn.Config.Ccd, 0644)
-	path = filepath.Join(r.Ovpn.Config.Ccd, userID)
+	_ccd, _ := r.Ovpn.GetOptionByKey("client-config-dir")
+	os.MkdirAll(_ccd.Value, 0644)
+	path = filepath.Join(_ccd.Value, userID)
 
 	err = os.WriteFile(path, []byte("push \"redirect-gateway def1\"\n"), 0644)
 	if err != nil {
@@ -264,7 +275,8 @@ func (r *Routers) AppUpdateConfig(c *gin.Context) {
 	}
 
 	// Update routes
-	path := filepath.Join(r.Ovpn.Config.Ccd, userID)
+	_ccd, _ := r.Ovpn.GetOptionByKey("client-config-dir")
+	path := filepath.Join(_ccd.Value, userID)
 	err := os.WriteFile(path, []byte(data.Routes), 0644)
 	if err != nil {
 		log.Println("[WriteFile] [Warn] ", err)
@@ -273,8 +285,9 @@ func (r *Routers) AppUpdateConfig(c *gin.Context) {
 	}
 
 	// Update IP
+	_ipp, _ := r.Ovpn.GetOptionByKey("ifconfig-pool-persist")
 	ipp := libs.IfconfigPoolPersist{
-		Path:    r.Ovpn.Config.Ipp,
+		Path:    _ipp.Value,
 		Network: r.Ovpn.Server,
 	}
 	ip, _ := ipp.GetIP(userID)
@@ -304,8 +317,9 @@ func (r *Routers) AppDeleteConfig(c *gin.Context) {
 		return
 	}
 
+	_ipp, _ := r.Ovpn.GetOptionByKey("ifconfig-pool-persist")
 	ipp := libs.IfconfigPoolPersist{
-		Path:    r.Ovpn.Config.Ipp,
+		Path:    _ipp.Value,
 		Network: r.Ovpn.Server,
 	}
 	err := ipp.DeleteIP(userID)
@@ -315,7 +329,8 @@ func (r *Routers) AppDeleteConfig(c *gin.Context) {
 		return
 	}
 
-	path := filepath.Join(r.Ovpn.Config.Ccd, userID)
+	_ccd, _ := r.Ovpn.GetOptionByKey("client-config-dir")
+	path := filepath.Join(_ccd.Value, userID)
 	err = os.RemoveAll(path)
 	if err != nil {
 		log.Println("[RemoveFile] [Warn] ", err)

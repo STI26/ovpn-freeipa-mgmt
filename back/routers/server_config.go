@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sti26/ovpn_freeipa_mgmt/libs"
@@ -118,7 +121,10 @@ func (r *Routers) AppCreateServerCert(c *gin.Context) {
 
 	// Save Certificate
 	cert := serializers.CertSerialazer(&obj)
-	err = os.WriteFile(r.Ovpn.Config.Cert, []byte(cert), 0644)
+	_cert, _ := r.Ovpn.GetOptionByKey("cert")
+	libs.BackupFile(_cert.Value)
+
+	err = os.WriteFile(_cert.Value, []byte(cert), 0644)
 	if err != nil {
 		log.Println("[WriteFile] [Warn] ", err)
 		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
@@ -142,7 +148,10 @@ func (r *Routers) AppCreateServerCert(c *gin.Context) {
 	}
 
 	// Save key
-	err = os.WriteFile(r.Ovpn.Config.Key, PrivateKeyRow.Bytes(), 0644)
+	_key, _ := r.Ovpn.GetOptionByKey("key")
+	libs.BackupFile(_key.Value)
+
+	err = os.WriteFile(_key.Value, PrivateKeyRow.Bytes(), 0644)
 	if err != nil {
 		log.Println("[WriteFile] [Warn] ", err)
 		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
@@ -203,7 +212,14 @@ func (r *Routers) AppCreateDH(c *gin.Context) {
 		return
 	}
 
-	// TODO: ...
+	_dh, _ := r.Ovpn.GetOptionByKey("dh")
+	libs.BackupFile(_dh.Value)
+
+	cmd := exec.Command("openssl", "dhparam", "-out", _dh.Value, "2048")
+	output, _ := cmd.Output()
+	fmt.Println(string(output))
+
+	log.Printf("[Log] dh updated: %s (%s)", c.Request.UserAgent(), c.ClientIP())
 
 	c.JSON(http.StatusOK, map[string]string{"error": ""})
 }
@@ -219,7 +235,16 @@ func (r *Routers) AppCreateTlsAuth(c *gin.Context) {
 		return
 	}
 
-	// TODO: ...
+	_tlsAuth, _ := r.Ovpn.GetOptionByKey("tls-auth")
+	pathToTlsAuth := strings.Split(_tlsAuth.Value, " ")[0]
+	libs.BackupFile(pathToTlsAuth)
+
+	cmd := exec.Command("openvpn", "--genkey", "secret", pathToTlsAuth)
+	if _, err := cmd.Output(); err != nil {
+		log.Println("[TlsAuth] [Warn] ", err)
+	}
+
+	log.Printf("[Log] tls-auth updated: %s (%s)", c.Request.UserAgent(), c.ClientIP())
 
 	c.JSON(http.StatusOK, map[string]string{"error": ""})
 }
