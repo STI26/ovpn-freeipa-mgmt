@@ -2,17 +2,15 @@
 import { RouterView, useRouter } from 'vue-router'
 import { ref, watch, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
-import Toast from '@/components/Toast.vue';
-import Modal from '@/components/Modal.vue';
+import Toast from '@/components/Toast.vue'
+import Modal from '@/components/Modal.vue'
 
 const store = useStore()
 const query = ref('')
 const router = useRouter()
 
 const enableNavBar = computed(() => {
-  return router.currentRoute.value.meta.navbar
-    ? ""
-    : "bg-light"
+  return router.currentRoute.value.meta.navbar ? '' : 'bg-light'
 })
 
 const logout = () => {
@@ -20,28 +18,36 @@ const logout = () => {
   router.push('/login')
 }
 
-watch(() => router.currentRoute.value, () => {
-  query.value = ''
-})
+watch(
+  () => router.currentRoute.value,
+  () => {
+    query.value = ''
+  }
+)
 
-watch(() => query.value, (newQ, oldQ) => {
-  store.commit('updateSearchString', newQ)
-})
+watch(
+  () => query.value,
+  (newQ, oldQ) => {
+    store.commit('updateSearchString', newQ)
+  }
+)
 
-watch(() => store.getters.token, (newT, oldT) => {
-  if (newT === null) logout()
-})
+watch(
+  () => store.getters.token,
+  (newT, oldT) => {
+    if (newT === null) logout()
+  }
+)
 
 onMounted(() => {
   store.dispatch('autoLogin')
-})
+});
 </script>
 
 <template>
   <header v-if="!enableNavBar">
     <nav class="navbar fixed-top navbar-light bg-light">
       <div class="container-fluid">
-
         <div class="d-flex">
           <router-link class="btn btn-outline-dark" to="/">/</router-link>
         </div>
@@ -57,7 +63,9 @@ onMounted(() => {
         </div>
 
         <div class="d-flex flex-fill">
-          <router-link class="btn btn-outline-success" to="/create">Create new</router-link>
+          <router-link class="btn btn-outline-success" to="/create"
+            >Create new</router-link
+          >
         </div>
 
         <div class="dropdown">
@@ -68,23 +76,61 @@ onMounted(() => {
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
+            <span class="material-icons align-top"> account_circle </span>
             {{ store.getters.username }}
           </button>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-            <li><router-link class="dropdown-item" to="/connections">Connections</router-link></li>
-            <li><router-link class="dropdown-item" to="/config">Config</router-link></li>
-            <li><router-link class="dropdown-item" to="/crl">CRL</router-link></li>
-            <li><router-link class="dropdown-item" to="/about">About</router-link></li>
+          <ul
+            class="dropdown-menu dropdown-menu-end"
+            aria-labelledby="userMenu"
+          >
+            <li>
+              <router-link class="dropdown-item lh-lg" to="/connections"
+                ><span class="material-icons opacity-75 align-text-bottom pe-2">
+                  people </span
+                >Connections</router-link
+              >
+            </li>
+            <li>
+              <router-link class="dropdown-item lh-lg" to="/config"
+                ><span class="material-icons opacity-75 align-text-bottom pe-2">
+                  settings </span
+                >Config</router-link
+              >
+            </li>
+            <li>
+              <router-link class="dropdown-item lh-lg" to="/crl"
+                ><span class="material-icons opacity-75 align-text-bottom pe-2">
+                  group_remove </span
+                >CRL</router-link
+              >
+            </li>
+            <li>
+              <router-link class="dropdown-item lh-lg" to="/about"
+                ><span class="material-icons opacity-75 align-text-bottom pe-2">
+                  info </span
+                >About</router-link
+              >
+            </li>
             <li><hr class="dropdown-divider" /></li>
-            <li><button class="dropdown-item" @click="logout" type="button">Logout</button></li>
+            <li>
+              <button class="dropdown-item lh-lg" @click="logout" type="button">
+                <span class="material-icons opacity-75 align-text-bottom pe-2">
+                  logout </span
+                >Logout
+              </button>
+            </li>
           </ul>
         </div>
-
       </div>
     </nav>
   </header>
 
-  <main aria-live="polite" aria-atomic="true" class="position-relative" :class="enableNavBar">
+  <main
+    aria-live="polite"
+    aria-atomic="true"
+    class="position-relative"
+    :class="enableNavBar"
+  >
     <div class="container">
       <RouterView />
     </div>
