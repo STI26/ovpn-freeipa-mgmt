@@ -7,11 +7,13 @@ import (
 	"errors"
 	"io"
 	"io/fs"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 func contains(source *[]int, target int) bool {
@@ -127,6 +129,16 @@ func createFile(p string) (*os.File, error) {
 		return nil, err
 	}
 	return os.Create(p)
+}
+
+func BackupFile(path string) {
+	input, err := ioutil.ReadFile(path)
+	if err != nil {
+		return
+	}
+
+	path += time.Now().Format(".2006-01-02-15-04-05.0")
+	ioutil.WriteFile(path, input, 0644)
 }
 
 func nextIP(ip net.IP) {
