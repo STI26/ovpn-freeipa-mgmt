@@ -25,9 +25,7 @@ const onSubmit = () => {
         ip: data.vpnIP,
         mask: data.vpnMask
       },
-      config: {
-        local: data.server
-      }
+      local: data.server
     })
     .then(() => {
       spinner.value = false
