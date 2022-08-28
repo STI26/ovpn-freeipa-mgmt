@@ -42,20 +42,24 @@ func certSerialazer(cert string) string {
 		res += string(cert[i])
 	}
 
-	res += "\n-----END CERTIFICATE-----"
+	res += "\n-----END CERTIFICATE-----\n"
 
 	return res
 }
 
-func CertsSerialazer(respObj *models.RespObjCertsRequest) string {
+func CertsSerialazer(respObj *models.RespObjCertsRequest, chain bool) string {
 
 	if len(respObj.Result) != 1 {
 		return ""
 	}
 
 	res := ""
-	for _, i := range respObj.Result[0].CertificateChain {
-		res += "\n" + certSerialazer(i.Base64)
+	if chain {
+		for _, i := range respObj.Result[0].CertificateChain {
+			res += "\n" + certSerialazer(i.Base64)
+		}
+	} else {
+		res = certSerialazer(respObj.Result[0].Certificate)
 	}
 
 	return res
@@ -64,6 +68,17 @@ func CertsSerialazer(respObj *models.RespObjCertsRequest) string {
 func CertSerialazer(respObj *models.RespObjCertRequest) string {
 
 	res := certSerialazer(respObj.Result.Certificate)
+
+	return res
+}
+
+func CaSerialazer(respObj *models.RespObjCaRequest) string {
+
+	if len(respObj.Result) != 1 {
+		return ""
+	}
+
+	res := certSerialazer(respObj.Result[0].Certificate)
 
 	return res
 }

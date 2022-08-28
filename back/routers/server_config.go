@@ -56,13 +56,25 @@ func (r *Routers) AppCreateServerConfig(c *gin.Context) {
 		return
 	}
 
-	err := c.BindJSON(r.Ovpn)
+	type config struct {
+		Server libs.Network `json:"server"`
+		Local  string       `json:"local"`
+	}
+	var data config
+
+	err := c.BindJSON(&data)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, &gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
+
+	local := models.OvpnAvailableOptions["local"]
+	local.Value = data.Local
+	r.Ovpn.Optons = append(r.Ovpn.Optons, local)
+
+	r.Ovpn.Server = data.Server
 
 	err = r.Ovpn.CreateServerConfig(*r.Cfg.OvpnConf)
 	if err != nil {
@@ -165,15 +177,31 @@ func (r *Routers) AppCreateCA(c *gin.Context) {
 	var h models.Headers
 	c.BindHeader(&h)
 
-	// Check Authentication
-	if _, code, err := r.Ipa.Jrpc(c, h.Authorization, "ping", []any{}, &gin.H{}); err != nil {
-		log.Println("[JSON_RPC] [Warn] ", err, "|", code)
+	resp, code, err := r.Ipa.Jrpc(c, h.Authorization, "ca_find", []any{}, &gin.H{
+		"cn":  *r.Cfg.IPAcacn,
+		"all": true,
+	})
+	if err != nil {
+		log.Println("[JSON_RPC] [Warn] ", err)
 		c.JSON(code, map[string]string{"error": err.Error()})
 		return
 	}
 
-	if err := r.Ovpn.UpdateCA(); err != nil {
-		log.Println("[UpdateCA] [Warn] ", err)
+	var obj models.RespObjCaRequest
+	err = libs.ParseResponse(resp, &obj)
+	if err != nil {
+		log.Println("[parseResponse] [Warn] ", err)
+		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+
+	ca := serializers.CaSerialazer(&obj)
+	_ca, _ := r.Ovpn.GetOptionByKey("ca")
+	libs.BackupFile(_ca.Value)
+
+	err = os.WriteFile(_ca.Value, []byte(ca), 0644)
+	if err != nil {
+		log.Println("[WriteFile] [Warn] ", err)
 		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}

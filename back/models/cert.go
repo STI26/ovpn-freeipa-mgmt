@@ -1,5 +1,12 @@
 package models
 
+type RespObjCaRequest struct {
+	Count   int    `json:"count"`
+	Message any    `json:"messages"`
+	Result  []Ca   `json:"result"`
+	Summary string `json:"summary"`
+}
+
 type RespObjCertRequest struct {
 	Count   int    `json:"count"`
 	Message any    `json:"messages"`
@@ -25,6 +32,17 @@ type Cert struct {
 	ValidNotBefore   string `json:"valid_not_before"`
 	Certificate      string `json:"certificate,omitempty"`
 	RevocationReason int    `json:"revocation_reason,omitempty"`
+	CertificateChain []struct {
+		Base64 string `json:"__base64__"`
+	} `json:"certificate_chain,omitempty"`
+}
+
+type Ca struct {
+	Cn               []string `json:"cn"`
+	IpaCaIssuerDn    []string `json:"ipacaissuerdn"`
+	IpaCaSubjectDn   []string `json:"ipacasubjectdn"`
+	Dn               string   `json:"dn"`
+	Certificate      string   `json:"certificate,omitempty"`
 	CertificateChain []struct {
 		Base64 string `json:"__base64__"`
 	} `json:"certificate_chain,omitempty"`

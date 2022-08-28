@@ -182,9 +182,10 @@ func (ovpn *OpenVPN) CreateServerConfig(path string) error {
 		return err
 	}
 
+	local, _ := ovpn.GetOptionByKey("local")
 	err = tmpl.Execute(data, map[string]interface{}{
 		"network": ovpn.Server,
-		"options": ovpn.Optons,
+		"local":   local.Value,
 	})
 	if err != nil {
 		log.Println("[tmpl.Execute] [Error] ", err)
@@ -196,9 +197,6 @@ func (ovpn *OpenVPN) CreateServerConfig(path string) error {
 		log.Println("[WriteFile] [Error] ", err)
 		return err
 	}
-
-	ovpn.UpdateCA()
-	ovpn.UpdateCrl()
 
 	return nil
 }
@@ -217,31 +215,6 @@ func (ovpn *OpenVPN) UpdateClientConfig(client, data string) error {
 	}
 
 	return nil
-}
-
-func (ovpn *OpenVPN) UpdateCA() error {
-	u := url.URL{
-		Scheme: "https",
-		Host:   ovpn.getIPAServer(),
-		Path:   "/ipa/config/ca.crt",
-	}
-
-	ca, _ := ovpn.GetOptionByKey("ca")
-	BackupFile(ca.Value)
-
-	_, err := DownloadFile(u.String(), ca.Value)
-	return err
-}
-
-func (ovpn *OpenVPN) GetCA() string {
-	ca, _ := ovpn.GetOptionByKey("ca")
-	b, err := os.ReadFile(ca.Value)
-	if err != nil {
-		log.Print(err)
-		return ""
-	}
-
-	return string(b)
 }
 
 func (ovpn *OpenVPN) UpdateCrl() error {
