@@ -1,18 +1,18 @@
 #Client config
 client
 resolv-retry infinite
-remote {{ .serverConfig.Local }}
+remote {{range $option := .options}}{{if eq $option.Key "local"}}{{$option.Value}}{{end}}{{end}}
 
 #Connect config
-port {{ .serverConfig.Port }}
-proto {{ .serverConfig.Proto }}
-dev {{ .serverConfig.Dev }}
+port {{range $option := .options}}{{if eq $option.Key "port"}}{{$option.Value}}{{end}}{{end}}
+proto {{range $option := .options}}{{if eq $option.Key "proto"}}{{$option.Value}}{{end}}{{end}}
+dev {{range $option := .options}}{{if eq $option.Key "dev"}}{{$option.Value}}{{end}}{{end}}
 nobind
 remote-cert-tls server
 persist-key
 persist-tun
-comp-lzo {{ .serverConfig.CompLzo }}
-tun-mtu {{ .serverConfig.TunMtu }}
+comp-lzo {{range $option := .options}}{{if eq $option.Key "comp-lzo"}}{{$option.Value}}{{end}}{{end}}
+tun-mtu {{range $option := .options}}{{if eq $option.Key "tun-mtu"}}{{$option.Value}}{{end}}{{end}}
 
 tls-client
 
@@ -20,12 +20,12 @@ tls-client
 keepalive 60 120
 
 #Encryption config
-{{ if .serverConfig.DataCiphers }}
-data-ciphers {{ .serverConfig.DataCiphers }}
-{{- end }}
-{{ if .serverConfig.Auth }}
-auth {{ .serverConfig.Auth }}
-{{- end }}
+{{- range $option := .options }}{{ if eq $option.Key "data-ciphers" }}
+data-ciphers {{ $option.Value }}
+{{- end }}{{ end }}
+{{- range $option := .options }}{{ if eq $option.Key "auth" }}
+auth {{$option.Value}}
+{{- end }}{{ end }}
 
 #Log config
 log-append /var/log/openvpn/openvpn-append.log
@@ -33,22 +33,22 @@ verb 3
 
 {{ if .cert }}
 <cert>
-{{ .cert }}
+{{ .cert -}}
 </cert>
 {{- end }}
 {{ if .key }}
 <key>
-{{ .key }}
+{{ .key -}}
 </key>
 {{- end }}
 {{ if .ca }}
 <ca>
-{{ .ca }}
+{{ .ca -}}
 </ca>
 {{- end }}
 {{ if .tlsAuth }}
 key-direction 1
 <tls-auth>
-{{ .tlsAuth }}
+{{ .tlsAuth -}}
 </tls-auth>
 {{- end }}
