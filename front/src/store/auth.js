@@ -19,16 +19,16 @@ export default {
     auth (state, userData) {
       state.token = userData.token
       state.username = userData.username
-      // Set localStorege
-      localStorage.setItem('token', state.token)
-      localStorage.setItem('username', state.username)
+      // Set sessionStorage
+      sessionStorage.setItem('token', state.token)
+      sessionStorage.setItem('username', state.username)
     },
     clearAuth (state) {
       state.token = null
       state.username = null
-      // Clear localStorege
-      localStorage.removeItem('token')
-      localStorage.removeItem('username')
+      // Clear sessionStorage
+      sessionStorage.removeItem('token')
+      sessionStorage.removeItem('username')
     }
   },
   actions: {
@@ -50,13 +50,13 @@ export default {
       return response.json()
     },
     autoLogin ({ commit }) {
-      const token = localStorage.getItem('token')
+      const token = sessionStorage.getItem('token')
       if (!token) {
         return undefined
       }
       commit('auth', {
-        token: localStorage.getItem('token'),
-        username: localStorage.getItem('username')
+        token: sessionStorage.getItem('token'),
+        username: sessionStorage.getItem('username')
       })
     }
   }
