@@ -10,7 +10,11 @@ const query = ref('')
 const router = useRouter()
 
 const enableNavBar = computed(() => {
-  return router.currentRoute.value.meta.navbar ? '' : 'bg-light'
+  return !router.currentRoute.value.meta.navbar
+})
+
+const darkmode = computed(() => {
+  return store.getters.darkmode
 })
 
 const logout = () => {
@@ -39,8 +43,14 @@ watch(
   }
 )
 
+const swTheme = () => {
+  console.log(darkmode.value)
+  store.commit('setDarkmode', !darkmode.value)
+}
+
 onMounted(() => {
   store.dispatch('autoLogin')
+  store.dispatch('loadTheme')
 });
 </script>
 
@@ -83,6 +93,13 @@ onMounted(() => {
             class="dropdown-menu dropdown-menu-end"
             aria-labelledby="userMenu"
           >
+            <li>
+              <button class="dropdown-item lh-lg" @click="swTheme"
+                ><span class="material-icons opacity-75 align-text-bottom pe-2">
+                  {{ darkmode ? 'light_mode' : 'dark_mode' }} </span
+                >{{ darkmode ? 'Light mode' : 'Dark mode' }}</button
+              >
+            </li>
             <li>
               <router-link class="dropdown-item lh-lg" to="/connections"
                 ><span class="material-icons opacity-75 align-text-bottom pe-2">
@@ -129,7 +146,6 @@ onMounted(() => {
     aria-live="polite"
     aria-atomic="true"
     class="position-relative"
-    :class="enableNavBar"
   >
     <div class="container">
       <RouterView />
@@ -139,11 +155,56 @@ onMounted(() => {
   </main>
 </template>
 
-<style>
+<style lang="scss">
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/mixins";
+
+.dark {
+    
+    $enable-gradients: true;
+
+    /* redefine theme colors for dark theme */
+    $primary: #012345;
+    $secondary: #111111;
+    $success: #222222;
+    $dark: #000;
+    
+    $theme-colors: (
+        "primary": $primary,
+        "secondary": $secondary,
+        "success": $success,
+        "danger": $danger,
+        "info": $indigo,
+        "dark": $dark,
+        "light": #aaa,
+    );
+
+    /* redefine theme color variables */
+    @each $color, $value in $theme-colors {
+        --#{$variable-prefix}#{$color}: #{$value};
+    }
+    
+    $theme-colors-rgb: map-loop($theme-colors, to-rgb, "$value");
+    
+    @each $color, $value in $theme-colors-rgb {
+        --#{$variable-prefix}#{$color}-rgb: #{$value};
+    }
+
+    $body-color: #eeeeee;
+    $body-bg: #263C5C;
+    
+    --#{$variable-prefix}body-color: #{$body-color};
+    --#{$variable-prefix}body-bg: #{$body-bg};
+      
+    @import "bootstrap/scss/bootstrap";
+}
+
 .search-form {
   min-width: 50%;
 }
 main {
   padding-top: 54px;
+  min-height: 100vh;
 }
 </style>

@@ -6,6 +6,7 @@ import config from '@/store/config'
 import connections from '@/store/connections'
 import about from '@/store/about'
 import crl from '@/store/crl'
+import themes from '@/store/themes'
 
 
 export default createStore({
@@ -153,6 +154,7 @@ export default createStore({
     config,
     connections,
     about,
-    crl
+    crl,
+    themes
   }
 })
