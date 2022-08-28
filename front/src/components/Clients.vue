@@ -80,59 +80,58 @@ onMounted(() => {
       store.commit('updateToast', {color: 'danger', text: e})
       store.dispatch('showToast')
     })
-})
+});
 </script>
 
 <template>
 
-  <div class="card text-center">
-    <h5 class="card-header text-muted">Users</h5>
+  <div class="card text-center shadow-sm p-3 mb-3 rounded bg-light">
+    <h5 class="card-header text-muted border-bottom-0 bg-light">Users</h5>
+      <div v-if="spinner.users" class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      <div v-else-if="filteredUsers.length === 0">
+        <h5>users not found</h5>
+      </div>
+      <div v-else class="list-group">
+        <button
+          type="button"
+          v-for="user in filteredUsers" :key="user.id"
+          class="list-group-item list-group-item-light d-flex justify-content-between align-items-center list-group-item-action"
+          :class="user.active ? 'active' : ''"
+          @click="showClient(user)"
+        >
+          {{ user.name }}
+          <span class="badge bg-secondary rounded-pill">{{ user.numberOfCertificates }}</span>
+        </button>
+      </div>
   </div>
 
-  <div v-if="spinner.users" class="d-flex justify-content-center">
-    <div class="spinner-border" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
-  <div v-else-if="filteredUsers.length === 0">
-    <h5>users not found</h5>
-  </div>
-  <div v-else class="list-group">
-    <button
-      type="button"
-      v-for="user in filteredUsers" :key="user.id"
-      class="list-group-item d-flex justify-content-between align-items-center list-group-item-action"
-      :class="{ active: user.active }"
-      @click="showClient(user)"
-    >
-      {{ user.name }}
-      <span class="badge bg-secondary rounded-pill">{{ user.numberOfCertificates }}</span>
-    </button>
-  </div>
 
-  <div class="card text-center">
-    <h5 class="card-header text-muted">Hosts</h5>
-  </div>
-
-  <div v-if="spinner.hosts" class="d-flex justify-content-center">
-    <div class="spinner-border" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
-  <div v-else-if="filteredHosts.length === 0">
-    <h5>hosts not found</h5>
-  </div>
-  <div v-else class="list-group">
-    <button
-      type="button"
-      v-for="host in filteredHosts" :key="host.id"
-      class="list-group-item d-flex justify-content-between align-items-center list-group-item-action"
-      :class="{ active: host.active }"
-      @click="showClient(host)"
-    >
-      {{ host.name }}
-      <span class="badge bg-secondary rounded-pill">{{ host.numberOfCertificates }}</span>
-    </button>
+  <div class="card text-center shadow-sm p-3 mb-3 rounded bg-light">
+    <h5 class="card-header text-muted border-bottom-0 bg-light">Hosts</h5>
+      <div v-if="spinner.hosts" class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      <div v-else-if="filteredHosts.length === 0">
+        <h5>hosts not found</h5>
+      </div>
+      <div v-else class="list-group">
+        <button
+          type="button"
+          v-for="host in filteredHosts" :key="host.id"
+          class="list-group-item list-group-item-light d-flex justify-content-between align-items-center list-group-item-action"
+          :class="host.active ? 'active' : ''"
+          @click="showClient(host)"
+        >
+          {{ host.name }}
+          <span class="badge bg-secondary rounded-pill">{{ host.numberOfCertificates }}</span>
+        </button>
+      </div>
   </div>
 
 </template>

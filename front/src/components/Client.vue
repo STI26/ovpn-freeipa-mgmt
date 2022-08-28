@@ -154,7 +154,7 @@ watch(() => client.selectedCertificate, (newCertID, oldCertID) => {
     client.certStatus = cert[0].status
     client.certExpiresOn = cert[0].valid_not_after
   }
-})
+});
 </script>
 
 <template>
@@ -166,7 +166,7 @@ watch(() => client.selectedCertificate, (newCertID, oldCertID) => {
   <div v-else-if="client.id === null">
     <h5>nothing selected</h5>
   </div>
-  <form v-else @submit.prevent="saveClient">
+  <form class="shadow p-3 mb-2 rounded" v-else @submit.prevent="saveClient">
     <div class="row">
       <div class="col mb-3">
         <button type="button" class="btn-close float-end" @click="clearForm" aria-label="Close"></button>
@@ -202,7 +202,7 @@ watch(() => client.selectedCertificate, (newCertID, oldCertID) => {
           readonly
           class="form-control"
           id="clientCertStatus"
-          v-model.cm="client.certStatus"
+          v-model.trim="client.certStatus"
         />
       </div>
       <div class="col-md mb-3">
