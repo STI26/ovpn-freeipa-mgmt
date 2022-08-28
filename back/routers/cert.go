@@ -24,6 +24,7 @@ func (r *Routers) AppGetCerts(c *gin.Context) {
 	resp, code, err := r.Ipa.Jrpc(c, h.Authorization, "cert_find", []interface{}{}, map[string]interface{}{
 		"cacn":    *r.Cfg.IPAcacn,
 		"subject": subject,
+		"exactly": true,
 	})
 	if err != nil {
 		log.Println("[JSON_RPC] [Warn] ", err)
