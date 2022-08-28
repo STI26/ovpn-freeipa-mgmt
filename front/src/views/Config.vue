@@ -1,6 +1,6 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
-import { useRouter } from 'vue-router';
+import { onMounted, ref, computed, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 
 const router = useRouter()
@@ -8,13 +8,21 @@ const store = useStore()
 
 const config = ref(null)
 const configError = ref('')
+const updateStatus = reactive({
+  ca: false,
+  crl_verify: false,
+  dh: false,
+  tls_auth: false,
+  cert: false,
+  key: false
+})
 
 const isInclude = (cfgItem, str) => {
   const lstr = str.toLocaleLowerCase()
   return (
-    cfgItem.name.toLocaleLowerCase().includes(lstr) ||
+    cfgItem.key.toLocaleLowerCase().includes(lstr) ||
     cfgItem.value.toLocaleLowerCase().includes(lstr) ||
-    cfgItem.message.toLocaleLowerCase().includes(lstr)
+    cfgItem.description.toLocaleLowerCase().includes(lstr)
   )
 }
 
@@ -25,26 +33,31 @@ const filteredConfig = computed(() => {
 })
 
 const showUpdateBtn = (key) => {
-  switch (key) {
-    case 'ca':
-    case 'crl':
-    case 'cert':
-    case 'key':
-      return true
-    default:
-      return false
-  }
+  key = key.replace('-', '_')
+  return Object.keys(updateStatus).includes(key)
 }
 
 const update = (key) => {
+  key = key.replace('-', '_')
+
+  if (updateStatus[key]) {
+    return
+  }
+
   let action = ''
 
   switch (key) {
     case 'ca':
       action = 'updateCA'
       break
-    case 'crl':
+    case 'crl_verify':
       action = 'updateCrl'
+      break
+    case 'dh':
+      action = 'updateDH'
+      break
+    case 'tls_auth':
+      action = 'updateTlsAuth'
       break
     case 'cert':
     case 'key':
@@ -54,31 +67,18 @@ const update = (key) => {
       return
   }
 
+  updateStatus[key] = true
+
   store
     .dispatch(action)
     .then(() => {
+      updateStatus[key] = false
       loadConfig()
     })
-    .catch(e => {
+    .catch((e) => {
       store.commit('updateToast', { color: 'danger', text: e })
       store.dispatch('showToast')
     })
-}
-
-const cfgToArray = (obj) => {
-  const list = []
-
-  for (const [key, val] of Object.entries(obj.value)) {
-    list.push({
-      key: key,
-      name: obj.name[key],
-      value: val,
-      status: obj.status[key],
-      message: obj.message[key]
-    })
-  }
-
-  return list
 }
 
 const loadConfig = () => {
@@ -86,7 +86,7 @@ const loadConfig = () => {
     .dispatch('getServerConfig')
     .then((data) => {
       configError.value = data.error
-      config.value = cfgToArray(data.config)
+      config.value = data.config
     })
     .catch((e) => {
       store.commit('updateToast', { color: 'danger', text: e })
@@ -118,29 +118,43 @@ onMounted(() => {
       </div>
       <ol v-else class="list-group list-group-numbered">
         <li
-          v-for="item of filteredConfig"
-          :key="item.name"
-          class="list-group-item d-flex justify-content-between align-items-start"
+          v-for="(item, i) of filteredConfig"
+          :key="item.key + i"
+          class="list-group-item d-flex justify-content-between align-items-start position-relative"
         >
           <div class="ms-2 me-auto w-100">
             <div class="fw-bold">
-              <span v-if="item.status === 'true'" class="text-success"
-                >&#10003;</span
-              >
-              <span v-else-if="item.status === 'false'" class="text-danger"
-                >&#10007;</span
-              >
-              {{ item.name || item.key }}:
+              <span v-if="item.status" class="text-success">&#10003;</span>
+              <span v-else-if="('status' in item) && !item.status" class="text-danger">&#10007;</span>
+              {{ item.key }}:
               <span
                 v-if="showUpdateBtn(item.key)"
                 class="badge bg-primary btn float-end"
                 v-on:click="update(item.key)"
-                >Update</span
+              >
+                <span
+                  :class="
+                    updateStatus[item.key]
+                      ? 'spinner-border spinner-border-sm'
+                      : ''
+                  "
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                <span v-if="!updateStatus[item.key]">Update</span></span
               >
             </div>
             {{ item.value }}
-            <span v-if="item.message"> ({{ item.message }})</span>
+            <span class="fw-light" v-if="item.note"> ({{ item.note }})</span>
           </div>
+          <span
+            class="btn position-absolute top-10 start-0 translate-middle badge rounded-pill bg-info"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            :title="item.description"
+          >
+            ?
+          </span>
         </li>
       </ol>
     </div>
