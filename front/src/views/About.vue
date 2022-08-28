@@ -27,11 +27,11 @@ onMounted(() => {
       store.commit('updateToast', { color: 'danger', text: e })
       store.dispatch('showToast')
     })
-})
+});
 </script>
 
 <template>
-  <div class="card mt-3">
+  <div class="card text-dark bg-light mt-3">
     <div class="card-header">About</div>
     <div class="card-body">
       <table class="table table-hover">

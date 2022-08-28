@@ -100,7 +100,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="card mt-3">
+  <div class="card text-dark bg-light mt-3">
     <div class="card-header">Server Config</div>
     <div class="card-body">
       <div v-if="!config" class="d-flex justify-content-center">
@@ -120,7 +120,7 @@ onMounted(() => {
         <li
           v-for="(item, i) of filteredConfig"
           :key="item.key + i"
-          class="list-group-item d-flex justify-content-between align-items-start position-relative"
+          class="list-group-item list-group-item-light d-flex justify-content-between align-items-start position-relative"
         >
           <div class="ms-2 me-auto w-100">
             <div class="fw-bold">

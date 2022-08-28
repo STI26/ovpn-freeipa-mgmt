@@ -56,7 +56,7 @@ onMounted(() => {
       <span class="visually-hidden">Loading...</span>
     </div>
   </div>
-  <div v-else class="card mt-3">
+  <div v-else class="card text-dark bg-light mt-3">
     <div class="card-header">
       <span class="lh-lg">Certificate Revocation List</span>
       <span class="badge bg-primary btn float-end" v-on:click="update">Update</span>
@@ -69,7 +69,7 @@ onMounted(() => {
         <li
           v-for="item of filteredCrl"
           :key="item.serial_number"
-          class="list-group-item d-flex justify-content-between align-items-start"
+          class="list-group-item list-group-item-light d-flex justify-content-between align-items-start"
         >
           <div class="ms-2 me-auto w-100">
             <div><span class="fw-light">Serial Number:</span> {{ item.serial_number }}</div>
