@@ -25,6 +25,18 @@ export default {
         method: 'POST'
       })
     },
+    async updateDH ({ dispatch }) {
+      return dispatch('fetch', {
+        path: '/config/dh',
+        method: 'POST'
+      })
+    },
+    async updateTlsAuth ({ dispatch }) {
+      return dispatch('fetch', {
+        path: '/config/tlsauth',
+        method: 'POST'
+      })
+    },
     async updateCrl ({ dispatch }) {
       return dispatch('fetch', {
         path: '/config/crl',
