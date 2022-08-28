@@ -96,7 +96,7 @@ func (r *Routers) AppDownloadConfig(c *gin.Context) {
 		return
 	}
 
-	cert := serializers.CertsSerialazer(&obj)
+	cert := serializers.CertsSerialazer(&obj, false)
 
 	// Get user key
 	path := filepath.Join(*r.Cfg.OvpnKeys, fmt.Sprintf("%d.key", certID))
@@ -139,11 +139,11 @@ func (r *Routers) AppDownloadConfig(c *gin.Context) {
 	}
 
 	err = tmpl.Execute(config, map[string]interface{}{
-		"serverConfig": r.Ovpn.Optons,
-		"ca":           string(ca),
-		"tlsAuth":      string(tlsAuth),
-		"cert":         cert,
-		"key":          string(key),
+		"options": r.Ovpn.Optons,
+		"ca":      string(ca),
+		"tlsAuth": string(tlsAuth),
+		"cert":    cert,
+		"key":     string(key),
 	})
 	if err != nil {
 		log.Println("[tmpl.Execute] [Warn] ", err)
