@@ -27,7 +27,7 @@ export default {
       if (!darkmode) {
         commit('setDarkmode', false)
       } else {
-        commit('setDarkmode', Boolean(darkmode))
+        commit('setDarkmode', darkmode === 'true' ? true : false)
       }
     }
   }
