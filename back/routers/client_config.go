@@ -181,6 +181,7 @@ func (r *Routers) AppCreateConfig(c *gin.Context) {
 		map[string]interface{}{
 			"cacn":         *r.Cfg.IPAcacn,
 			"request_type": "pkcs10",
+			"profile_id":   *r.Cfg.CaProfile,
 			"principal":    libs.GetPrincipal(userID, servers[0]),
 			"add":          true,
 		},

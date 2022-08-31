@@ -17,6 +17,7 @@ type GlobalConfig struct {
 	IPAFilterUserGroup *string
 	IPAFilterHostGroup *string
 	IPAcacn            *string
+	CaProfile          *string
 
 	OvpnConf *string
 	OvpnKeys *string
@@ -38,6 +39,7 @@ func (cfg *GlobalConfig) Init() {
 	cfg.IPAFilterUserGroup = flag.String("ipa-usergroup", "", "IPA user group.")
 	cfg.IPAFilterHostGroup = flag.String("ipa-hostgroup", "", "IPA host group.")
 	cfg.IPAcacn = flag.String("ipa-cacn", "openVPN", "Name of issuing CA.")
+	cfg.CaProfile = flag.String("ipa-ca-profile", "", "IPA Certificate Profile to use.")
 
 	cfg.OvpnConf = flag.String("ovpn-serverconf", "/etc/openvpn/server/server.conf", "Path to openvpn server.conf file.")
 	cfg.OvpnKeys = flag.String("ovpn-keys", "/etc/openvpn/keys", "Path to folder with user keys.")
