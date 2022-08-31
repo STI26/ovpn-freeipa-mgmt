@@ -174,17 +174,21 @@ func (r *Routers) AppCreateConfig(c *gin.Context) {
 
 	// Create new certificate
 	servers, _ := r.Ipa.GetIPAServers()
+	params := map[string]interface{}{
+		"cacn":         *r.Cfg.IPAcacn,
+		"request_type": "pkcs10",
+		"principal":    libs.GetPrincipal(userID, servers[0]),
+		"add":          true,
+	}
+	if *r.Cfg.CaProfile != "" {
+		params["profile_id"] = *r.Cfg.CaProfile
+	}
+
 	resp, code, err := r.Ipa.Jrpc(c, h.Authorization, "cert_request",
 		[]interface{}{
 			csr.Raw,
 		},
-		map[string]interface{}{
-			"cacn":         *r.Cfg.IPAcacn,
-			"request_type": "pkcs10",
-			"profile_id":   *r.Cfg.CaProfile,
-			"principal":    libs.GetPrincipal(userID, servers[0]),
-			"add":          true,
-		},
+		params,
 	)
 	if err != nil {
 		log.Println("[JSON_RPC] [Warn] ", err)
