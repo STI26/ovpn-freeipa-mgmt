@@ -3,7 +3,7 @@ local {{ .local }}
 
 server {{ .network.IP }} {{ .network.Mask }}
 management localhost 7505
-crl-verify /etc/openvpn/crl.bin
+crl-verify /etc/openvpn/crl.pem
 
 # Push routes to the client to allow it
 push "route {{ .network.IP }} 255.255.255.0"
@@ -34,7 +34,6 @@ keepalive 60 120
 client-to-client
 
 # Encryption config
-data-ciphers AES-256-GCM:AES-128-GCM:AES-256-CBC
 auth SHA256
 
 # Log config
