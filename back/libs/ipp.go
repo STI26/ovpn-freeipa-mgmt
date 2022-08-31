@@ -30,7 +30,7 @@ func (ipp IfconfigPoolPersist) getAllIP() []string {
 
 		row := strings.Split(rows[i], ",")
 
-		if len(row) > 0 {
+		if len(row) > 1 {
 			ips = append(ips, strings.TrimSpace(row[1]))
 		}
 	}
@@ -52,7 +52,7 @@ func (ipp IfconfigPoolPersist) getFreeIP() string {
 	_mask := net.ParseIP(ipp.Network.Mask)
 	ip := net.ParseIP(ipp.Network.IP)
 
-	mask := net.IPMask(_mask)
+	mask := net.IPMask(_mask.To4())
 	// Get first ip
 	ip = ip.Mask(mask)
 
@@ -62,7 +62,8 @@ func (ipp IfconfigPoolPersist) getFreeIP() string {
 
 	pool := ipp.getAllIP()
 
-	for i := 0; i < ips; i++ {
+	// First addr use server
+	for i := 2; i < ips; i++ {
 		if ipp.isFreeIP(ip, pool) {
 			return ip.String()
 		}
