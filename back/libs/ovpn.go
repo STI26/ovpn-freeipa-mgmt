@@ -224,10 +224,11 @@ func (ovpn *OpenVPN) UpdateCrl() error {
 		Path:   "/ipa/crl/MasterCRL.bin",
 	}
 
-	crl, _ := ovpn.GetOptionByKey("crl-verify")
-	BackupFile(crl.Value)
+	_crl, _ := ovpn.GetOptionByKey("crl-verify")
+	BackupFile(_crl.Value)
 
-	_, err := DownloadFile(u.String(), crl.Value)
+	crl := Crl{path: _crl.Value}
+	err := crl.Download(&u)
 
 	return err
 }
@@ -244,34 +245,24 @@ func (ovpn *OpenVPN) GetStatusInfo() (string, error) {
 
 func (ovpn *OpenVPN) GetCrlInfo() (*pkix.TBSCertificateList, error) {
 	_crl, _ := ovpn.GetOptionByKey("crl-verify")
-	b, err := os.ReadFile(_crl.Value)
-	if err != nil {
-		return nil, err
-	}
+	crl := Crl{path: _crl.Value}
 
-	crl, err := x509.ParseDERCRL(b)
-	if err != nil {
-		return nil, err
-	}
-
-	return &crl.TBSCertList, nil
+	return crl.GetInfo()
 }
 
 func (ovpn *OpenVPN) GetServerConfig() []models.OvpnOption {
 
 	// Check CRL
-	crl, idx := ovpn.GetOptionByKey("crl-verify")
-	if crl != nil {
-		if b, err := os.ReadFile(crl.Value); err != nil {
+	_crl, idx := ovpn.GetOptionByKey("crl-verify")
+	if _crl != nil {
+		crl := Crl{path: _crl.Value}
+
+		if info, err := crl.GetInfo(); err != nil {
 			ovpn.Optons[idx].Status = false
 			ovpn.Optons[idx].Note = "file not found"
 		} else {
 			ovpn.Optons[idx].Status = true
-			ovpn.Optons[idx].Note = "Issuer: "
-
-			if _crl, err := x509.ParseDERCRL(b); err == nil {
-				ovpn.Optons[idx].Note += _crl.TBSCertList.Issuer.String()
-			}
+			ovpn.Optons[idx].Note = "Issuer: " + info.Issuer.String()
 		}
 	}
 
