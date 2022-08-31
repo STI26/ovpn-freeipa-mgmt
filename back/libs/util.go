@@ -1,30 +1,17 @@
 package libs
 
 import (
-	"bytes"
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
-	"io"
 	"io/fs"
 	"io/ioutil"
 	"net"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 )
-
-func contains(source *[]int, target int) bool {
-	for _, v := range *source {
-		if v == target {
-			return true
-		}
-	}
-
-	return false
-}
 
 func KeyContains(source *[]fs.DirEntry, target string) bool {
 	for _, v := range *source {
@@ -73,42 +60,6 @@ func ParseResponse(result any, toType any) error {
 	}
 
 	return nil
-}
-
-func DownloadFile(url string, filepath string) (*bytes.Buffer, error) {
-
-	// Get the data
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if filepath == "" {
-		buf := new(bytes.Buffer)
-
-		_, err = io.Copy(buf, resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		return buf, nil
-	}
-
-	// Create the file
-	file, err := os.Create(filepath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	// Write the body to file
-	_, err = io.Copy(file, resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
 }
 
 func GetPrincipal(subject, server string) string {
