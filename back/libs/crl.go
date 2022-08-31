@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	b64 "encoding/base64"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -70,6 +71,10 @@ func (crl *Crl) derToPem(der *bytes.Buffer) string {
 func (crl *Crl) pemToDer(pem []byte) ([]byte, error) {
 
 	data := strings.Split(string(pem), "-----")
+
+	if len(data) < 3 {
+		return nil, errors.New("error parse crl")
+	}
 
 	der, err := b64.StdEncoding.DecodeString(data[2])
 	if err != nil {
