@@ -44,7 +44,6 @@ watch(
 )
 
 const swTheme = () => {
-  console.log(darkmode.value)
   store.commit('setDarkmode', !darkmode.value)
 }
 
