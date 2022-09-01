@@ -167,18 +167,21 @@ onMounted(() => {
     /* redefine theme colors for dark theme */
     $primary: #012345;
     $secondary: #111111;
-    $success: #222222;
-    $dark: #000;
+    $success: #C4DBE0;
+    $dark: #C4DBE0;
     
     $theme-colors: (
         "primary": $primary,
-        "secondary": $secondary,
+        "secondary": $dark,
         "success": $success,
         "danger": $danger,
         "info": $indigo,
         "dark": $dark,
-        "light": #aaa,
+        "light": #191928,
     );
+    $table-hover-color:           $dark;
+    $table-hover-bg-factor:       .75;
+    $table-hover-bg:              rgba($table-color, $table-hover-bg-factor);
 
     /* redefine theme color variables */
     @each $color, $value in $theme-colors {
@@ -192,7 +195,7 @@ onMounted(() => {
     }
 
     $body-color: #eeeeee;
-    $body-bg: #263C5C;
+    $body-bg: #3A5673;
     
     --#{$variable-prefix}body-color: #{$body-color};
     --#{$variable-prefix}body-bg: #{$body-bg};
