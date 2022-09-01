@@ -145,6 +145,7 @@ onMounted(() => {
     aria-live="polite"
     aria-atomic="true"
     class="position-relative"
+    :class="{ 'bg-light': enableNavBar }"
   >
     <div class="container">
       <RouterView />
