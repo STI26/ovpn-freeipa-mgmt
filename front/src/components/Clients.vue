@@ -85,8 +85,8 @@ onMounted(() => {
 
 <template>
 
-  <div class="card text-center shadow-sm p-3 mb-3 rounded bg-light">
-    <h5 class="card-header text-muted border-bottom-0 bg-light">Users</h5>
+  <div class="card text-center shadow-sm p-3 mb-3 rounded bg-light bg-gradient">
+    <h5 class="card-header text-muted border-bottom-0 bg-light bg-gradient">Users</h5>
       <div v-if="spinner.users" class="d-flex justify-content-center">
         <div class="spinner-border" role="status">
           <span class="visually-hidden">Loading...</span>
@@ -104,14 +104,14 @@ onMounted(() => {
           @click="showClient(user)"
         >
           {{ user.name }}
-          <span class="badge bg-secondary rounded-pill">{{ user.numberOfCertificates }}</span>
+          <span class="badge bg-primary rounded-pill">{{ user.numberOfCertificates }}</span>
         </button>
       </div>
   </div>
 
 
-  <div class="card text-center shadow-sm p-3 mb-3 rounded bg-light">
-    <h5 class="card-header text-muted border-bottom-0 bg-light">Hosts</h5>
+  <div class="card text-center shadow-sm p-3 mb-3 rounded bg-light bg-gradient">
+    <h5 class="card-header text-muted border-bottom-0 bg-light bg-gradient">Hosts</h5>
       <div v-if="spinner.hosts" class="d-flex justify-content-center">
         <div class="spinner-border" role="status">
           <span class="visually-hidden">Loading...</span>
@@ -129,7 +129,7 @@ onMounted(() => {
           @click="showClient(host)"
         >
           {{ host.name }}
-          <span class="badge bg-secondary rounded-pill">{{ host.numberOfCertificates }}</span>
+          <span class="badge bg-primary rounded-pill">{{ host.numberOfCertificates }}</span>
         </button>
       </div>
   </div>

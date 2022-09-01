@@ -52,13 +52,13 @@ onMounted(() => {
       <span class="visually-hidden">Loading...</span>
     </div>
   </div>
-  <div v-else class="card text-dark bg-light mt-3">
+  <div v-else class="card text-dark bg-light bg-gradient mt-3">
     <div class="card-header">
       Active Clients <span class="fw-lighter">({{ version }})</span>
       <span class="badge bg-primary btn float-end" v-on:click="update">Update</span>
     </div>
     <div class="card-body">
-      <table class="table table-hover">
+      <table class="table table-ligth text-dark table-hover">
         <thead>
           <tr>
             <th scope="col">#</th>

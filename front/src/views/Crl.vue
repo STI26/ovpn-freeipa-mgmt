@@ -56,7 +56,7 @@ onMounted(() => {
       <span class="visually-hidden">Loading...</span>
     </div>
   </div>
-  <div v-else class="card text-dark bg-light mt-3">
+  <div v-else class="card text-dark bg-light bg-gradient mt-3">
     <div class="card-header">
       <span class="lh-lg">Certificate Revocation List</span>
       <span class="badge bg-primary btn float-end" v-on:click="update">Update</span>

@@ -79,7 +79,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="card text-dark bg-light mt-3">
+  <div class="card text-dark bg-light bg-gradient mt-3">
     <div class="card-header">Select name</div>
     <div class="card-body">
       <div class="row px-5">

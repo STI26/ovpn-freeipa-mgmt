@@ -42,7 +42,7 @@ const onSubmit = () => {
 </script>
 
 <template>
-  <form @submit.prevent="onSubmit" class="card mt-3">
+  <form @submit.prevent="onSubmit" class="card text-dark bg-light bg-gradient mt-3">
     <div class="card-header">Create Server Config</div>
     <div class="card-body">
       <div class="row px-5">
@@ -52,6 +52,7 @@ const onSubmit = () => {
             type="text"
             class="form-control"
             v-model="data.server"
+            required
           />
         </div>
         <div class="input-group mb-3">
@@ -64,6 +65,7 @@ const onSubmit = () => {
             maxlength="15"
             placeholder="xxx.xxx.xxx.xxx"
             aria-label="xxx.xxx.xxx.xxx"
+            required
           />
         </div>
         <div class="input-group mb-3">
@@ -76,6 +78,7 @@ const onSubmit = () => {
             maxlength="15"
             placeholder="xxx.xxx.xxx.xxx"
             aria-label="xxx.xxx.xxx.xxx"
+            required
           />
         </div>
       </div>

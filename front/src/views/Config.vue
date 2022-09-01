@@ -100,7 +100,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="card text-dark bg-light mt-3">
+  <div class="card text-dark bg-light bg-gradient mt-3">
     <div class="card-header">Server Config</div>
     <div class="card-body">
       <div v-if="!config" class="d-flex justify-content-center">
@@ -111,7 +111,7 @@ onMounted(() => {
       <div v-else-if="configError">
         {{ configError }}
         <router-link
-          class="btn btn-outline-primary float-end"
+          class="btn btn-outline-danger float-end"
           to="/config/create"
           >Create</router-link
         >

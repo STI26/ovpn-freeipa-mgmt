@@ -31,10 +31,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="card text-dark bg-light mt-3">
+  <div class="card text-dark bg-light bg-gradient mt-3">
     <div class="card-header">About</div>
     <div class="card-body">
-      <table class="table table-hover">
+      <table class="table table-ligth text-dark table-hover">
         <tbody>
           <tr>
             <th scope="row">IPA</th>
