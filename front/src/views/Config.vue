@@ -124,8 +124,8 @@ onMounted(() => {
         >
           <div class="ms-2 me-auto w-100">
             <div class="fw-bold">
-              <span v-if="item.status" class="text-success">&#10003;</span>
-              <span v-else-if="('status' in item) && !item.status" class="text-danger">&#10007;</span>
+              <span v-if="item.status" class="text-success bg-light rounded-pill">&#10003;</span>
+              <span v-else-if="('status' in item) && !item.status" class="text-danger bg-light rounded-pill">&#10007;</span>
               {{ item.key }}:
               <span
                 v-if="showUpdateBtn(item.key)"
