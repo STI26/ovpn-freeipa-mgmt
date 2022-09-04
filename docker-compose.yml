@@ -12,8 +12,6 @@ services:
         --ipa-server=https://ipa.local.net
         --ipa-allowgroup=admins
         --ipa-cacn=openVPN
-    ports:
-      - 8000:8000
     volumes:
       - type: bind
         source: /etc/openvpn/
