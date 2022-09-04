@@ -13,7 +13,6 @@ persist-key
 persist-tun
 comp-lzo {{range $option := .options}}{{if eq $option.Key "comp-lzo"}}{{$option.Value}}{{end}}{{end}}
 tun-mtu {{range $option := .options}}{{if eq $option.Key "tun-mtu"}}{{$option.Value}}{{end}}{{end}}
-
 tls-client
 
 #Client config
@@ -24,6 +23,9 @@ keepalive 60 120
 data-ciphers {{ $option.Value }}
 {{- end }}{{ end }}
 {{- range $option := .options }}{{ if eq $option.Key "auth" }}
+auth {{$option.Value}}
+{{- end }}{{ end }}
+{{- range $option := .options }}{{ if eq $option.Key "cipher" }}
 auth {{$option.Value}}
 {{- end }}{{ end }}
 
