@@ -23,7 +23,7 @@ func CertRevokedListSerialazer(respObj *pkix.TBSCertificateList) *gin.H {
 	crl := obj{
 		Issuer:     respObj.Issuer.String(),
 		ThisUpdate: respObj.ThisUpdate.String(),
-		NextUpdate: respObj.ThisUpdate.String(),
+		NextUpdate: respObj.NextUpdate.String(),
 	}
 
 	for _, i := range respObj.RevokedCertificates {
