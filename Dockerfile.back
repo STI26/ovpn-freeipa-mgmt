@@ -7,7 +7,7 @@ USER root
 
 WORKDIR /app
 
-ENV VERSION $VERSION
+ARG VERSION=v1.0.0
 
 COPY back/ ./
 RUN go mod download
