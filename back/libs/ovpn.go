@@ -225,12 +225,40 @@ func (ovpn *OpenVPN) UpdateCrl() error {
 	}
 
 	_crl, _ := ovpn.GetOptionByKey("crl-verify")
-	BackupFile(_crl.Value)
+	if _crl == nil {
+		return errors.New("option 'crl-verify' not found")
+	}
 
 	crl := Crl{path: _crl.Value}
 	err := crl.Download(&u)
 
 	return err
+}
+
+func (ovpn *OpenVPN) AutoUpdateCrl() {
+	for {
+		err := ovpn.UpdateCrl()
+		if err != nil {
+			log.Println("[UpdateCrl] [Warn] ", err, ", next update attempt in 5 seconds")
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		crlInfo, err := ovpn.GetCrlInfo()
+		if err != nil {
+			log.Println("[UpdateCrl] [Warn] ", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		log.Println(
+			"[UpdateCrl] [Info] CRL updated successfully. NextUpdate:",
+			crlInfo.NextUpdate.String(),
+		)
+
+		delay := time.Until(crlInfo.NextUpdate)
+		time.Sleep(delay)
+	}
 }
 
 func (ovpn *OpenVPN) GetStatusInfo() (string, error) {

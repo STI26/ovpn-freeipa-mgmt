@@ -88,6 +88,7 @@ func main() {
 
 	ovpn = libs.OpenVPN{IPAHosts: ipaServers}
 	ovpn.Init(*config.OvpnConf)
+	go ovpn.AutoUpdateCrl()
 
 	mask := net.ParseIP(ovpn.Server.Mask)
 	sz, _ := net.IPMask(mask.To4()).Size()

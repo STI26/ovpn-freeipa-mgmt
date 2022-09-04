@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sti26/ovpn_freeipa_mgmt/libs"
@@ -70,37 +69,6 @@ func (r *Routers) AppRevokeCert(c *gin.Context) {
 		c.JSON(code, map[string]string{"error": err.Error()})
 		return
 	}
-
-	err = r.Ovpn.UpdateCrl()
-	if err != nil {
-		log.Println("[UpdateCrl] [Warn] ", err)
-		c.JSON(code, map[string]string{"error": err.Error()})
-		return
-	}
-
-	crlInfo, err := r.Ovpn.GetCrlInfo()
-	if err != nil {
-		log.Println("[GetCrlInfo] [Warn] ", err)
-		c.JSON(code, map[string]string{"error": err.Error()})
-		return
-	}
-
-	delay := time.Until(crlInfo.NextUpdate)
-	log.Printf(
-		"[UpdateCrl] [Info] CRL ThisUpdate: %s; NextUpdate: %s.\n",
-		crlInfo.ThisUpdate.String(),
-		crlInfo.NextUpdate.String(),
-	)
-
-	go func(d *time.Duration, ovpn *libs.OpenVPN) {
-		log.Printf("[UpdateCrl] [Info] CRL will be updated after %s.\n", delay.String())
-
-		time.Sleep(*d)
-		ovpn.UpdateCrl()
-
-		log.Println("[UpdateCrl] [Info] CRL updated successfully.")
-
-	}(&delay, r.Ovpn)
 
 	c.JSON(code, map[string]string{"error": ""})
 }
