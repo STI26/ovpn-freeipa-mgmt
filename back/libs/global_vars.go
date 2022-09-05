@@ -31,14 +31,14 @@ type GlobalConfig struct {
 func (cfg *GlobalConfig) Init() {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	cfg.ListenAddress = flag.String("addr", "127.0.0.1:8000", "Listening and serving address.")
+	cfg.ListenAddress = flag.String("addr", "0.0.0.0:8000", "Listening and serving address.")
 
 	cfg.IPADomain = flag.String("ipa-domain", "", "Domain with IPA servers. (search by SRV record)")
-	cfg.IPAServer = flag.String("ipa-server", "https://ipa.local.net", "FreeIPA server with a scheme.")
+	cfg.IPAServer = flag.String("ipa-server", "", "FreeIPA server with a scheme.")
 	cfg.IPAAllowGroup = flag.String("ipa-allowgroup", "admins", "IPA group with allowed access.")
 	cfg.IPAFilterUserGroup = flag.String("ipa-usergroup", "", "IPA user group.")
 	cfg.IPAFilterHostGroup = flag.String("ipa-hostgroup", "", "IPA host group.")
-	cfg.IPAcacn = flag.String("ipa-cacn", "openVPN", "Name of issuing CA.")
+	cfg.IPAcacn = flag.String("ipa-cacn", "ipa", "Name of issuing CA.")
 	cfg.CaProfile = flag.String("ipa-ca-profile", "", "IPA Certificate Profile to use.")
 
 	cfg.OvpnConf = flag.String("ovpn-serverconf", "/etc/openvpn/server/server.conf", "Path to openvpn server.conf file.")
