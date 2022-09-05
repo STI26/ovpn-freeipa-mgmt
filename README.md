@@ -21,7 +21,7 @@ Web interface for openvpn uses Freeipa as Certificate Authority.
 Requirements: You need [openvpn](https://openvpn.net/community-downloads/) installed.
 
 1. Install [Docker](https://docs.docker.com/get-docker/) and [docker-compose](https://docs.docker.com/compose/install/).
-2. Download [docker-compose.yaml](https://github.com/STI26/ovpn-freeipa-mgmt/blob/main/docker-compose.yaml).
+2. Download [docker-compose.yml](https://github.com/STI26/ovpn-freeipa-mgmt/blob/main/docker-compose.yml).
 3. Change `https://ipa.example.com` to your FreeIPA server. See other options.
 
     ```bash
